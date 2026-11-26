@@ -1,15 +1,3 @@
-    // ==========================================
-    // МОЙ КОНФИГ FIREBASE
-    // ==========================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyBsUrzm1u7dTaoD0Cx9Of6pwMow57m23cI",
-      authDomain: "phoenix-eb19f.firebaseapp.com",
-      projectId: "phoenix-eb19f",
-      storageBucket: "phoenix-eb19f.firebasestorage.app",
-      messagingSenderId: "109009090204",
-      appId: "1:109009090204:web:46eae0eceb278cb2ec5f59"
-    };
-    // ==========================================
     <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -28,15 +16,19 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+   // ==========================================
+    // МОЙ КОНФИГ FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsUrzm1u7dTaoD0Cx9Of6pwMow57m23cI",
+      authDomain: "phoenix-eb19f.firebaseapp.com",
+      projectId: "phoenix-eb19f",
+      storageBucket: "phoenix-eb19f.firebasestorage.app",
+      messagingSenderId: "109009090204",
+      appId: "1:109009090204:web:46eae0eceb278cb2ec5f59"
+    };
+    // ==========================================
 
-  const firebaseConfig = {
-    apiKey: "ВСТАВЬ_СЮДА_API_KEY",
-    authDomain: "ВСТАВЬ_СЮДА.firebaseapp.com",
-    projectId: "ВСТАВЬ_СЮДА",
-    storageBucket: "ВСТАВЬ_СЮДА.appspot.com",
-    messagingSenderId: "ВСТАВЬ_СЮДА",
-    appId: "ВСТАВЬ_СЮДА"
-  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
