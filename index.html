@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Планер Героя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a1e;
+    --card: rgba(26, 17, 54, 0.7);
+    --accent: #ff5fa2;
+    --gold: #ffd86b;
+    --mint: #7ff3d0;
+    --lilac: #b9a2ff;
+    --text: #fff;
+    --sub: #8b7ba8;
+    --font-title: 'Fredoka', sans-serif;
+    --font-ui: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+    background: radial-gradient(circle at 50% 0%, #2a1b38 0%, #0f0a1e 100%);
+  }
+
+  /* --- Экран Авторизации --- */
+  #auth-screen {
+    position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
+    background: rgba(15, 10, 30, 0.95); backdrop-filter: blur(20px); z-index: 100; padding: 20px;
+    transition: opacity 0.5s ease;
+  }
+  .auth-box {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px; padding: 40px 30px; width: 100%; max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .auth-box h2 { font-family: var(--font-title); font-size: 28px; margin-bottom: 8px; }
+  .auth-box p { color: var(--sub); margin-bottom: 30px; font-size: 14px; }
+  .input-group { margin-bottom: 20px; }
+  .input-group input {
+    width: 100%; padding: 16px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff;
+    font-size: 16px; font-family: var(--font-ui); transition: all 0.3s;
+  }
+  .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 95, 162, 0.2); }
+  .btn-primary {
+    width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent) 0%, var(--lilac) 100%);
+    border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: transform 0.2s; font-family: var(--font-ui);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 95, 162, 0.4); }
+  .toggle-auth { text-align: center; margin-top: 20px; font-size: 14px; color: var(--sub); }
+  .toggle-auth span { color: var(--accent); cursor: pointer; font-weight: 600; }
+
+  /* --- Основной Экран --- */
+  #app-screen { display: none; width: 100%; max-width: 600px; padding: 20px 20px 100px 20px; position: relative; z-index: 1; }
+
+  /* --- Блок Персонажа (Hero) --- */
+  .hero-section {
+    background: var(--card); border-radius: 24px; padding: 20px;
+    position: relative; overflow: hidden; margin-bottom: 24px;
+    border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+  }
+  .hero-bg { position: absolute; inset: 0; opacity: 0.15; pointer-events: none; z-index: 0; }
+  .hero-content { position: relative; z-index: 2; display: flex; align-items: center; gap: 16px; }
+  
+  .hero-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); display: flex; justify-content: center; align-items: center;
+    font-size: 40px; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+  .hero-avatar.bump { transform: scale(1.15) rotate(5deg); }
+  .hero-info { flex-grow: 1; }
+  .hero-name { font-family: var(--font-title); font-size: 20px; margin-bottom: 4px; }
+  .hero-desc { font-size: 13px; color: var(--sub); margin-bottom: 8px; line-height: 1.3; }
+  .hero-stats { display: flex; gap: 12px; font-size: 14px; font-weight: 600; align-items: center; }
+  .hero-stats span { color: var(--gold); }
+  
+  .xp-bar-bg { width: 100%; height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+  .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--mint), var(--lilac)); border-radius: 4px; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+  .change-hero-btn {
+    position: absolute; top: 20px; right: 20px; z-index: 3;
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: 0.2s; font-family: var(--font-ui);
+    backdrop-filter: blur(5px);
+  }
+  .change-hero-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* --- Форма Задач --- */
+  #task-form { display: flex; gap: 12px; margin-bottom: 24px; }
+  #task-input {
+    flex-grow: 1; padding: 16px; background: var(--card); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; color: #fff; font-size: 16px; font-family: var(--font-ui);
+    backdrop-filter: blur(10px); transition: 0.3s;
+  }
+  #task-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 95, 162, 0.3); }
+  #add-btn {
+    background: var(--accent); border: none; border-radius: 16px; width: 56px; height: 56px;
+    color: #fff; font-size: 28px; cursor: pointer; transition: 0.2s;
+    display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 5px 15px rgba(255, 95, 162, 0.4);
+  }
+  #add-btn:hover { transform: scale(1.05); background: #ff7ab3; }
+
+  /* --- Список Задач --- */
+  #task-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .task-item {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;
+    padding: 16px; display: flex; align-items: center; gap: 16px;
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; transition: all 0.3s;
+    backdrop-filter: blur(10px); position: relative; overflow: hidden;
+  }
+  .task-item:hover { background: rgba(26, 17, 54, 0.9); transform: translateX(4px); }
+  .task-item.done { opacity: 0.5; }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--sub); }
+  
+  .checkbox {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #555;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .task-item.done .checkbox { background: var(--mint); border-color: var(--mint); }
+  .checkbox svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.5); transition: 0.2s; }
+  .task-item.done .checkbox svg { opacity: 1; transform: scale(1); }
+  
+  .task-text { flex-grow: 1; font-size: 16px; word-break: break-word; line-height: 1.4; }
+  .delete-btn { background: none; border: none; color: #666; cursor: pointer; padding: 8px; border-radius: 8px; opacity: 0; transition: 0.2s; }
+  .task-item:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: #ff4d4d; background: rgba(255,77,77,0.1); }
+
+  /* --- Модалка Выбора Героя --- */
+  #hero-modal {
+    position: fixed; inset: 0; background: rgba(15, 10, 30, 0.9);
+    backdrop-filter: blur(15px); z-index: 50; display: none;
+    justify-content: center; align-items: center; padding: 20px;
+    transition: opacity 0.3s;
+  }
+  .modal-content {
+    background: var(--card); border-radius: 24px; width: 100%; max-width: 500px;
+    max-height: 85vh; overflow-y: auto; padding: 24px; border: 1px solid rgba(255,255,255,0.1);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-content h3 { font-family: var(--font-title); font-size: 22px; margin-bottom: 20px; text-align: center; }
+  .hero-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .hero-card {
+    background: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 16px;
+    padding: 16px; text-align: center; cursor: pointer; transition: 0.2s;
+  }
+  .hero-card:hover { background: rgba(255,255,255,0.1); }
+  .hero-card.active { border-color: var(--gold); background: rgba(255, 216, 107, 0.1); box-shadow: 0 0 20px rgba(255, 216, 107, 0.2); }
+  .hero-card .icon { font-size: 36px; margin-bottom: 8px; }
+  .hero-card .name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .hero-card .role { font-size: 11px; color: var(--sub); }
+  #close-modal { margin-top: 20px; width: 100%; padding: 14px; background: rgba(255,255,255,0.1); border: none; color: #fff; border-radius: 12px; cursor: pointer; font-weight: 600; font-family: var(--font-ui); transition: 0.2s; }
+  #close-modal:hover { background: rgba(255,255,255,0.2); }
+
+  /* --- Анимации --- */
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* Эффект взрыва частиц */
+  .particle {
+    position: fixed; width: 8px; height: 8px; border-radius: 50%;
+    pointer-events: none; z-index: 999;
+    animation: pop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes pop {
+    0% { transform: scale(1) translate(0, 0); opacity: 1; }
+    100% { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Экран Авторизации -->
+  <div id="auth-screen">
+    <div class="auth-box">
+      <h2 id="auth-title">С возвращением 👋</h2>
+      <p id="auth-subtitle">Войди, чтобы продолжить свой путь</p>
+      <div class="input-group"><input type="email" id="email" placeholder="Email"></div>
+      <div class="input-group"><input type="password" id="password" placeholder="Пароль"></div>
+      <button class="btn-primary" id="auth-submit-btn">Войти</button>
+      <div class="toggle-auth"><span id="toggle-mode">Нет аккаунта? Зарегистрироваться</span></div>
+      <div id="auth-error" style="color: #ff4d4d; font-size: 14px; margin-top: 15px; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Основной Экран -->
+  <div id="app-screen">
+    
+    <!-- Блок персонажа -->
+    <div class="hero-section" id="hero-section">
+      <button class="change-hero-btn" id="open-hero-modal">Сменить героя</button>
+      <div class="hero-bg" id="hero-bg"></div>
+      <div class="hero-content">
+        <div class="hero-avatar" id="hero-avatar">🐱</div>
+        <div class="hero-info">
+          <div class="hero-name" id="hero-name">Космо-Кот</div>
+          <div class="hero-desc" id="hero-desc">Любит спать и ловить мышей в невесомости.</div>
+          <div class="hero-stats">
+            <span>Ур. <b id="hero-level">1</b></span>
+            <span style="margin-left:auto">XP: <b id="hero-xp">0</b>/<b id="hero-xp-max">10</b></span>
+          </div>
+          <div class="xp-bar-bg"><div class="xp-bar-fill" id="hero-xp-bar" style="width: 0%;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Задачи -->
+    <form id="task-form">
+      <input type="text" id="task-input" placeholder="Новая миссия..." autocomplete="off">
+      <button type="submit" id="add-btn">+</button>
+    </form>
+    <ul id="task-list"></ul>
+
+    <button id="logout-btn" style="margin-top: 30px; background: none; border: 1px solid rgba(255,255,255,0.1); color: var(--sub); padding: 12px; border-radius: 12px; cursor: pointer; width: 100%; font-family: var(--font-ui);">Выйти из аккаунта</button>
+  </div>
+
+  <!-- Модалка выбора персонажа -->
+  <div id="hero-modal">
+    <div class="modal-content">
+      <h3>Выбери своего героя</h3>
+      <div class="hero-grid" id="hero-grid"></div>
+      <button id="close-modal">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // ==========================================
+    // ТВОЙ КОНФИГ FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsUrzm1u7dTaoD0Cx9Of6pwMow57m23cI",
+      authDomain: "phoenix-eb19f.firebaseapp.com",
+      projectId: "phoenix-eb19f",
+      storageBucket: "phoenix-eb19f.firebasestorage.app",
+      messagingSenderId: "109009090204",
+      appId: "1:109009090204:web:46eae0eceb278cb2ec5f59"
+    };
+    // ==========================================
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // --- ДАННЫЕ ГЕРОЕВ ---
+    const HEROES = [
+      { id: 'cat', icon: '🐱', name: 'Космо-Кот', desc: 'Любит спать и ловить мышей в невесомости. Каждая задача — это его добыча.', color: '#ff9ccc', role: 'Мечтатель', particleColor: '#ff9ccc' },
+      { id: 'samurai', icon: '⚔️', name: 'Кибер-Самурай', desc: 'Дисциплина и код — его второе оружие. Не терпит прокрастинацию.', color: '#5cf2ff', role: 'Воин', particleColor: '#5cf2ff' },
+      { id: 'mage', icon: '🔥', name: 'Маг Огня', desc: 'Сжигает список дел дотла. Осторожно, горячо!', color: '#ff8a2b', role: 'Маг', particleColor: '#ff8a2b' },
+      { id: 'spirit', icon: '🌿', name: 'Лесной Дух', desc: 'Растет и развивается вместе с твоими делами. Любит порядок.', color: '#7ff3d0', role: 'Хранитель', particleColor: '#7ff3d0' },
+      { id: 'wave', icon: '🌊', name: 'Девочка-Волна', desc: 'Плывет по течению, но всегда достигает цели. Спокойна и неудержима.', color: '#4a6bff', role: 'Стихия', particleColor: '#4a6bff' },
+      { id: 'ninja', icon: '🥷', name: 'Ночной Ниндзя', desc: 'Появляется из ниоткуда, выполняет задачи и исчезает в тени.', color: '#b9a2ff', role: 'Тень', particleColor: '#b9a2ff' },
+      { id: 'fox', icon: '🦊', name: 'Хитрый Лис', desc: 'Знает, как обойти любые препятствия. Находит лазейки в любых делах.', color: '#ffa500', role: 'Трикстер', particleColor: '#ffa500' },
+      { id: 'bear', icon: '🐻', name: 'Ученый Медведь', desc: 'Спокоен, умен и силен. Никогда не бросает начатое.', color: '#8b4513', role: 'Мудрец', particleColor: '#8b4513' }
+    ];
+
+    // --- Состояние ---
+    let isLoginMode = true;
+    let currentUser = null;
+    let unsubscribeTasks = null;
+    let playerData = {
+      activeHero: 'cat',
+      xp: { cat: 0, samurai: 0, mage: 0, spirit: 0, wave: 0, ninja: 0, fox: 0, bear: 0 }
+    };
+
+    // --- UI Элементы ---
+    const authScreen = document.getElementById('auth-screen');
+    const appScreen = document.getElementById('app-screen');
+    const authTitle = document.getElementById('auth-title');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const authSubmitBtn = document.getElementById('auth-submit-btn');
+    const toggleMode = document.getElementById('toggle-mode');
+    const authError = document.getElementById('auth-error');
+    
+    const taskForm = document.getElementById('task-form');
+    const taskInput = document.getElementById('task-input');
+    const taskList = document.getElementById('task-list');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    const heroAvatar = document.getElementById('hero-avatar');
+    const heroName = document.getElementById('hero-name');
+    const heroDesc = document.getElementById('hero-desc');
+    const heroLevel = document.getElementById('hero-level');
+    const heroXp = document.getElementById('hero-xp');
+    const heroXpMax = document.getElementById('hero-xp-max');
+    const heroXpBar = document.getElementById('hero-xp-bar');
+    const heroBg = document.getElementById('hero-bg');
+    
+    const openHeroModalBtn = document.getElementById('open-hero-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const heroModal = document.getElementById('hero-modal');
+    const heroGrid = document.getElementById('hero-grid');
+
+    // --- Логика Авторизации ---
+    toggleMode.addEventListener('click', () => {
+      isLoginMode = !isLoginMode;
+      authTitle.textContent = isLoginMode ? "С возвращением 👋" : "Создать аккаунт ✨";
+      authSubtitle.textContent = isLoginMode ? "Войди, чтобы продолжить свой путь" : "Начни свой путь к продуктивности";
+      authSubmitBtn.textContent = isLoginMode ? "Войти" : "Зарегистрироваться";
+      toggleMode.textContent = isLoginMode ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти";
+      authError.style.display = 'none';
+    });
+
+    authSubmitBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      if (!email || !password) return showError("Заполни все поля");
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = "Загрузка...";
+
+      try {
+        if (isLoginMode) await signInWithEmailAndPassword(auth, email, password);
+        else await createUserWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        showError(error.message);
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.textContent = isLoginMode ? "Войти" : "Зарегистрироваться";
+      }
+    });
+
+    function showError(msg) {
+      authError.textContent = msg;
+      authError.style.display = 'block';
+      setTimeout(() => authError.style.display = 'none', 4000);
+    }
+
+    logoutBtn.addEventListener('click', () => signOut(auth));
+
+    // --- Обработка состояния входа ---
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        authScreen.style.opacity = '0';
+        setTimeout(() => authScreen.style.display = 'none', 400);
+        appScreen.style.display = 'block';
+        
+        // Загружаем профиль (XP, активный герой)
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          playerData = userDoc.data();
+        } else {
+          await setDoc(doc(db, "users", user.uid), playerData);
+        }
+        
+        updateHeroUI();
+        loadTasks(user.uid);
+      } else {
+        currentUser = null;
+        authScreen.style.display = 'flex';
+        setTimeout(() => authScreen.style.opacity = '1', 10);
+        appScreen.style.display = 'none';
+        if (unsubscribeTasks) unsubscribeTasks();
+        emailInput.value = '';
+        passwordInput.value = '';
+        taskList.innerHTML = '';
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.textContent = isLoginMode ? "Войти" : "Зарегистрироваться";
+      }
+    });
+
+    // --- Логика UI Героя ---
+    function updateHeroUI() {
+      const hero = HEROES.find(h => h.id === playerData.activeHero) || HEROES[0];
+      const xp = playerData.xp[hero.id] || 0;
+      const level = Math.floor(xp / 10) + 1;
+      const xpInLevel = xp % 10;
+      const xpPercent = (xpInLevel / 10) * 100;
+
+      heroAvatar.textContent = hero.icon;
+      heroName.textContent = hero.name;
+      heroDesc.textContent = hero.desc;
+      heroLevel.textContent = level;
+      heroXp.textContent = xpInLevel;
+      heroXpMax.textContent = 10;
+      heroXpBar.style.width = `${xpPercent}%`;
+      
+      // Красивый фон и свечение
+      heroBg.innerHTML = `<div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:${hero.color};filter:blur(60px);border-radius:50%;opacity:0.6;"></div>`;
+      heroAvatar.style.borderColor = hero.color;
+      heroAvatar.style.boxShadow = `0 0 25px ${hero.color}66`;
+      heroXpBar.style.background = `linear-gradient(90deg, ${hero.color}, #fff)`;
+    }
+
+    function renderHeroGrid() {
+      heroGrid.innerHTML = HEROES.map(h => {
+        const xp = playerData.xp[h.id] || 0;
+        const level = Math.floor(xp / 10) + 1;
+        const isActive = playerData.activeHero === h.id;
+        return `
+          <div class="hero-card ${isActive ? 'active' : ''}" data-id="${h.id}">
+            <div class="icon">${h.icon}</div>
+            <div class="name">${h.name}</div>
+            <div class="role">${h.role} · Ур. ${level}</div>
+          </div>
+        `;
+      }).join('');
+
+      heroGrid.querySelectorAll('.hero-card').forEach(card => {
+        card.addEventListener('click', async () => {
+          const id = card.dataset.id;
+          playerData.activeHero = id;
+          await setDoc(doc(db, "users", currentUser.uid), playerData, { merge: true });
+          updateHeroUI();
+          renderHeroGrid();
+          heroModal.style.display = 'none';
+        });
+      });
+    }
+
+    openHeroModalBtn.addEventListener('click', () => { renderHeroGrid(); heroModal.style.display = 'flex'; });
+    closeModalBtn.addEventListener('click', () => heroModal.style.display = 'none');
+
+    // --- Работа с Задачами ---
+    function loadTasks(uid) {
+      const q = query(collection(db, "tasks"), where("userId", "==", uid));
+      unsubscribeTasks = onSnapshot(q, (snapshot) => {
+        taskList.innerHTML = '';
+        const tasks = [];
+        snapshot.forEach((doc) => tasks.push({ id: doc.id, ...doc.data() }));
+        tasks.sort((a, b) => b.createdAt - a.createdAt);
+        tasks.forEach((task, index) => renderTask(task, index));
+      });
+    }
+
+    function renderTask(task, index) {
+      const li = document.createElement('li');
+      li.className = `task-item ${task.done ? 'done' : ''}`;
+      li.style.animationDelay = `${index * 0.05}s`;
+
+      li.innerHTML = `
+        <div class="checkbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0f0a1e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <span class="task-text">${escapeHtml(task.text)}</span>
+        <button class="delete-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      `;
+
+      li.querySelector('.checkbox').addEventListener('click', async (e) => {
+        if (!task.done) {
+          const rect = e.target.getBoundingClientRect();
+          createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
+          bumpHero();
+          await addXp(1);
+        }
+        await updateDoc(doc(db, "tasks", task.id), { done: !task.done });
+      });
+
+      li.querySelector('.delete-btn').addEventListener('click', async () => {
+        li.style.transform = 'translateX(100px)';
+        li.style.opacity = '0';
+        setTimeout(async () => await deleteDoc(doc(db, "tasks", task.id)), 200);
+      });
+
+      taskList.appendChild(li);
+    }
+
+    // Вспомогательные функции
+    function createParticles(x, y, count) {
+      const hero = HEROES.find(h => h.id === playerData.activeHero) || HEROES[0];
+      const color = hero.particleColor || hero.color;
+      
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.background = color;
+        p.style.boxShadow = `0 0 10px ${color}`;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 80 + 20;
+        p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
+      }
+    }
+
+    function bumpHero() {
+      heroAvatar.classList.add('bump');
+      setTimeout(() => heroAvatar.classList.remove('bump'), 300);
+    }
+
+    async function addXp(amount) {
+      const heroId = playerData.activeHero;
+      playerData.xp[heroId] = (playerData.xp[heroId] || 0) + amount;
+      await setDoc(doc(db, "users", currentUser.uid), playerData, { merge: true });
+      updateHeroUI();
+    }
+
+    taskForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = taskInput.value.trim();
+      if (!text || !currentUser) return;
+      taskInput.value = '';
+      await addDoc(collection(db, "tasks"), {
+        text: text, done: false, userId: currentUser.uid, createdAt: Date.now()
+      });
+    });
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+        }
+  </script>
+</body>
+</html>
