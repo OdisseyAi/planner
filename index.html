@@ -1,253 +1,5 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Планер Героя</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0f0a1e;
-    --card: rgba(26, 17, 54, 0.7);
-    --accent: #ff5fa2;
-    --gold: #ffd86b;
-    --mint: #7ff3d0;
-    --lilac: #b9a2ff;
-    --text: #fff;
-    --sub: #8b7ba8;
-    --font-title: 'Fredoka', sans-serif;
-    --font-ui: 'Inter', sans-serif;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-ui);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    overflow-x: hidden;
-    background: radial-gradient(circle at 50% 0%, #2a1b38 0%, #0f0a1e 100%);
-  }
-
-  /* --- Экран Авторизации --- */
-  #auth-screen {
-    position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
-    background: rgba(15, 10, 30, 0.95); backdrop-filter: blur(20px); z-index: 100; padding: 20px;
-    transition: opacity 0.5s ease;
-  }
-  .auth-box {
-    background: var(--card); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 24px; padding: 40px 30px; width: 100%; max-width: 400px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
-    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .auth-box h2 { font-family: var(--font-title); font-size: 28px; margin-bottom: 8px; }
-  .auth-box p { color: var(--sub); margin-bottom: 30px; font-size: 14px; }
-  .input-group { margin-bottom: 20px; }
-  .input-group input {
-    width: 100%; padding: 16px; background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff;
-    font-size: 16px; font-family: var(--font-ui); transition: all 0.3s;
-  }
-  .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 95, 162, 0.2); }
-  .btn-primary {
-    width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent) 0%, var(--lilac) 100%);
-    border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600;
-    cursor: pointer; transition: transform 0.2s; font-family: var(--font-ui);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 95, 162, 0.4); }
-  .toggle-auth { text-align: center; margin-top: 20px; font-size: 14px; color: var(--sub); }
-  .toggle-auth span { color: var(--accent); cursor: pointer; font-weight: 600; }
-
-  /* --- Основной Экран --- */
-  #app-screen { display: none; width: 100%; max-width: 600px; padding: 20px 20px 100px 20px; position: relative; z-index: 1; }
-
-  /* --- Блок Персонажа (Hero) --- */
-  .hero-section {
-    background: var(--card); border-radius: 24px; padding: 20px;
-    position: relative; overflow: hidden; margin-bottom: 24px;
-    border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    transition: transform 0.3s ease;
-  }
-  .hero-bg { position: absolute; inset: 0; opacity: 0.15; pointer-events: none; z-index: 0; }
-  .hero-content { position: relative; z-index: 2; display: flex; align-items: center; gap: 16px; }
-  
-  .hero-avatar {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: rgba(255,255,255,0.05); display: flex; justify-content: center; align-items: center;
-    font-size: 40px; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-  .hero-avatar.bump { transform: scale(1.15) rotate(5deg); }
-  .hero-info { flex-grow: 1; }
-  .hero-name { font-family: var(--font-title); font-size: 20px; margin-bottom: 4px; }
-  .hero-desc { font-size: 13px; color: var(--sub); margin-bottom: 8px; line-height: 1.3; }
-  .hero-stats { display: flex; gap: 12px; font-size: 14px; font-weight: 600; align-items: center; }
-  .hero-stats span { color: var(--gold); }
-  
-  .xp-bar-bg { width: 100%; height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-top: 8px; overflow: hidden; }
-  .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--mint), var(--lilac)); border-radius: 4px; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-
-  .change-hero-btn {
-    position: absolute; top: 20px; right: 20px; z-index: 3;
-    background: rgba(255,255,255,0.1); border: none; color: #fff;
-    padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: 0.2s; font-family: var(--font-ui);
-    backdrop-filter: blur(5px);
-  }
-  .change-hero-btn:hover { background: rgba(255,255,255,0.2); }
-
-  /* --- Форма Задач --- */
-  #task-form { display: flex; gap: 12px; margin-bottom: 24px; }
-  #task-input {
-    flex-grow: 1; padding: 16px; background: var(--card); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px; color: #fff; font-size: 16px; font-family: var(--font-ui);
-    backdrop-filter: blur(10px); transition: 0.3s;
-  }
-  #task-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 95, 162, 0.3); }
-  #add-btn {
-    background: var(--accent); border: none; border-radius: 16px; width: 56px; height: 56px;
-    color: #fff; font-size: 28px; cursor: pointer; transition: 0.2s;
-    display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 5px 15px rgba(255, 95, 162, 0.4);
-  }
-  #add-btn:hover { transform: scale(1.05); background: #ff7ab3; }
-
-  /* --- Список Задач --- */
-  #task-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-  .task-item {
-    background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;
-    padding: 16px; display: flex; align-items: center; gap: 16px;
-    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; transition: all 0.3s;
-    backdrop-filter: blur(10px); position: relative; overflow: hidden;
-  }
-  .task-item:hover { background: rgba(26, 17, 54, 0.9); transform: translateX(4px); }
-  .task-item.done { opacity: 0.5; }
-  .task-item.done .task-text { text-decoration: line-through; color: var(--sub); }
-  
-  .checkbox {
-    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #555;
-    cursor: pointer; display: flex; justify-content: center; align-items: center;
-    transition: all 0.2s; flex-shrink: 0;
-  }
-  .task-item.done .checkbox { background: var(--mint); border-color: var(--mint); }
-  .checkbox svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.5); transition: 0.2s; }
-  .task-item.done .checkbox svg { opacity: 1; transform: scale(1); }
-  
-  .task-text { flex-grow: 1; font-size: 16px; word-break: break-word; line-height: 1.4; }
-  .delete-btn { background: none; border: none; color: #666; cursor: pointer; padding: 8px; border-radius: 8px; opacity: 0; transition: 0.2s; }
-  .task-item:hover .delete-btn { opacity: 1; }
-  .delete-btn:hover { color: #ff4d4d; background: rgba(255,77,77,0.1); }
-
-  /* --- Модалка Выбора Героя --- */
-  #hero-modal {
-    position: fixed; inset: 0; background: rgba(15, 10, 30, 0.9);
-    backdrop-filter: blur(15px); z-index: 50; display: none;
-    justify-content: center; align-items: center; padding: 20px;
-    transition: opacity 0.3s;
-  }
-  .modal-content {
-    background: var(--card); border-radius: 24px; width: 100%; max-width: 500px;
-    max-height: 85vh; overflow-y: auto; padding: 24px; border: 1px solid rgba(255,255,255,0.1);
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .modal-content h3 { font-family: var(--font-title); font-size: 22px; margin-bottom: 20px; text-align: center; }
-  .hero-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .hero-card {
-    background: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 16px;
-    padding: 16px; text-align: center; cursor: pointer; transition: 0.2s;
-  }
-  .hero-card:hover { background: rgba(255,255,255,0.1); }
-  .hero-card.active { border-color: var(--gold); background: rgba(255, 216, 107, 0.1); box-shadow: 0 0 20px rgba(255, 216, 107, 0.2); }
-  .hero-card .icon { font-size: 36px; margin-bottom: 8px; }
-  .hero-card .name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-  .hero-card .role { font-size: 11px; color: var(--sub); }
-  #close-modal { margin-top: 20px; width: 100%; padding: 14px; background: rgba(255,255,255,0.1); border: none; color: #fff; border-radius: 12px; cursor: pointer; font-weight: 600; font-family: var(--font-ui); transition: 0.2s; }
-  #close-modal:hover { background: rgba(255,255,255,0.2); }
-
-  /* --- Анимации --- */
-  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-
-  /* Эффект взрыва частиц */
-  .particle {
-    position: fixed; width: 8px; height: 8px; border-radius: 50%;
-    pointer-events: none; z-index: 999;
-    animation: pop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  @keyframes pop {
-    0% { transform: scale(1) translate(0, 0); opacity: 1; }
-    100% { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; }
-  }
-</style>
-</head>
-<body>
-
-  <!-- Экран Авторизации -->
-  <div id="auth-screen">
-    <div class="auth-box">
-      <h2 id="auth-title">С возвращением 👋</h2>
-      <p id="auth-subtitle">Войди, чтобы продолжить свой путь</p>
-      <div class="input-group"><input type="email" id="email" placeholder="Email"></div>
-      <div class="input-group"><input type="password" id="password" placeholder="Пароль"></div>
-      <button class="btn-primary" id="auth-submit-btn">Войти</button>
-      <div class="toggle-auth"><span id="toggle-mode">Нет аккаунта? Зарегистрироваться</span></div>
-      <div id="auth-error" style="color: #ff4d4d; font-size: 14px; margin-top: 15px; display: none;"></div>
-    </div>
-  </div>
-
-  <!-- Основной Экран -->
-  <div id="app-screen">
-    
-    <!-- Блок персонажа -->
-    <div class="hero-section" id="hero-section">
-      <button class="change-hero-btn" id="open-hero-modal">Сменить героя</button>
-      <div class="hero-bg" id="hero-bg"></div>
-      <div class="hero-content">
-        <div class="hero-avatar" id="hero-avatar">🐱</div>
-        <div class="hero-info">
-          <div class="hero-name" id="hero-name">Космо-Кот</div>
-          <div class="hero-desc" id="hero-desc">Любит спать и ловить мышей в невесомости.</div>
-          <div class="hero-stats">
-            <span>Ур. <b id="hero-level">1</b></span>
-            <span style="margin-left:auto">XP: <b id="hero-xp">0</b>/<b id="hero-xp-max">10</b></span>
-          </div>
-          <div class="xp-bar-bg"><div class="xp-bar-fill" id="hero-xp-bar" style="width: 0%;"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Задачи -->
-    <form id="task-form">
-      <input type="text" id="task-input" placeholder="Новая миссия..." autocomplete="off">
-      <button type="submit" id="add-btn">+</button>
-    </form>
-    <ul id="task-list"></ul>
-
-    <button id="logout-btn" style="margin-top: 30px; background: none; border: 1px solid rgba(255,255,255,0.1); color: var(--sub); padding: 12px; border-radius: 12px; cursor: pointer; width: 100%; font-family: var(--font-ui);">Выйти из аккаунта</button>
-  </div>
-
-  <!-- Модалка выбора персонажа -->
-  <div id="hero-modal">
-    <div class="modal-content">
-      <h3>Выбери своего героя</h3>
-      <div class="hero-grid" id="hero-grid"></div>
-      <button id="close-modal">Закрыть</button>
-    </div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
     // ==========================================
-    // ТВОЙ КОНФИГ FIREBASE
+    // МОЙ КОНФИГ FIREBASE
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyBsUrzm1u7dTaoD0Cx9Of6pwMow57m23cI",
@@ -258,278 +10,1375 @@
       appId: "1:109009090204:web:46eae0eceb278cb2ec5f59"
     };
     // ==========================================
+    <!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEME PLANNER 9000</title>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+<!-- ============================================================
+  FIREBASE CONFIG — ВСТАВЬ СВОИ ДАННЫЕ ИЗ FIREBASE CONSOLE
+  1. Создай проект на https://console.firebase.google.com
+  2. Включи Authentication (Email/Password)
+  3. Создай Firestore Database (в режиме test для начала)
+  4. Скопируй конфиг ниже
+============================================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- ДАННЫЕ ГЕРОЕВ ---
-    const HEROES = [
-      { id: 'cat', icon: '🐱', name: 'Космо-Кот', desc: 'Любит спать и ловить мышей в невесомости. Каждая задача — это его добыча.', color: '#ff9ccc', role: 'Мечтатель', particleColor: '#ff9ccc' },
-      { id: 'samurai', icon: '⚔️', name: 'Кибер-Самурай', desc: 'Дисциплина и код — его второе оружие. Не терпит прокрастинацию.', color: '#5cf2ff', role: 'Воин', particleColor: '#5cf2ff' },
-      { id: 'mage', icon: '🔥', name: 'Маг Огня', desc: 'Сжигает список дел дотла. Осторожно, горячо!', color: '#ff8a2b', role: 'Маг', particleColor: '#ff8a2b' },
-      { id: 'spirit', icon: '🌿', name: 'Лесной Дух', desc: 'Растет и развивается вместе с твоими делами. Любит порядок.', color: '#7ff3d0', role: 'Хранитель', particleColor: '#7ff3d0' },
-      { id: 'wave', icon: '🌊', name: 'Девочка-Волна', desc: 'Плывет по течению, но всегда достигает цели. Спокойна и неудержима.', color: '#4a6bff', role: 'Стихия', particleColor: '#4a6bff' },
-      { id: 'ninja', icon: '🥷', name: 'Ночной Ниндзя', desc: 'Появляется из ниоткуда, выполняет задачи и исчезает в тени.', color: '#b9a2ff', role: 'Тень', particleColor: '#b9a2ff' },
-      { id: 'fox', icon: '🦊', name: 'Хитрый Лис', desc: 'Знает, как обойти любые препятствия. Находит лазейки в любых делах.', color: '#ffa500', role: 'Трикстер', particleColor: '#ffa500' },
-      { id: 'bear', icon: '🐻', name: 'Ученый Медведь', desc: 'Спокоен, умен и силен. Никогда не бросает начатое.', color: '#8b4513', role: 'Мудрец', particleColor: '#8b4513' }
-    ];
+  const firebaseConfig = {
+    apiKey: "ВСТАВЬ_СЮДА_API_KEY",
+    authDomain: "ВСТАВЬ_СЮДА.firebaseapp.com",
+    projectId: "ВСТАВЬ_СЮДА",
+    storageBucket: "ВСТАВЬ_СЮДА.appspot.com",
+    messagingSenderId: "ВСТАВЬ_СЮДА",
+    appId: "ВСТАВЬ_СЮДА"
+  };
 
-    // --- Состояние ---
-    let isLoginMode = true;
-    let currentUser = null;
-    let unsubscribeTasks = null;
-    let playerData = {
-      activeHero: 'cat',
-      xp: { cat: 0, samurai: 0, mage: 0, spirit: 0, wave: 0, ninja: 0, fox: 0, bear: 0 }
-    };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    // --- UI Элементы ---
-    const authScreen = document.getElementById('auth-screen');
-    const appScreen = document.getElementById('app-screen');
-    const authTitle = document.getElementById('auth-title');
-    const authSubtitle = document.getElementById('auth-subtitle');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const authSubmitBtn = document.getElementById('auth-submit-btn');
-    const toggleMode = document.getElementById('toggle-mode');
-    const authError = document.getElementById('auth-error');
-    
-    const taskForm = document.getElementById('task-form');
-    const taskInput = document.getElementById('task-input');
-    const taskList = document.getElementById('task-list');
-    const logoutBtn = document.getElementById('logout-btn');
+  // Экспортируем в глобальную область для доступа из основного скрипта
+  window.FB = { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, getDoc, onSnapshot };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
 
-    const heroAvatar = document.getElementById('hero-avatar');
-    const heroName = document.getElementById('hero-name');
-    const heroDesc = document.getElementById('hero-desc');
-    const heroLevel = document.getElementById('hero-level');
-    const heroXp = document.getElementById('hero-xp');
-    const heroXpMax = document.getElementById('hero-xp-max');
-    const heroXpBar = document.getElementById('hero-xp-bar');
-    const heroBg = document.getElementById('hero-bg');
-    
-    const openHeroModalBtn = document.getElementById('open-hero-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const heroModal = document.getElementById('hero-modal');
-    const heroGrid = document.getElementById('hero-grid');
+<style>
+  :root {
+    --bg-0: #0a0a0f;
+    --bg-1: #14141f;
+    --bg-2: #1e1e2e;
+    --accent: #ff2e88;
+    --accent-2: #00f0ff;
+    --accent-3: #ffd60a;
+    --text: #f5f5f7;
+    --text-dim: #8a8a9a;
+    --success: #39ff14;
+    --danger: #ff3860;
+    --border: rgba(255,255,255,0.08);
+  }
 
-    // --- Логика Авторизации ---
-    toggleMode.addEventListener('click', () => {
-      isLoginMode = !isLoginMode;
-      authTitle.textContent = isLoginMode ? "С возвращением 👋" : "Создать аккаунт ✨";
-      authSubtitle.textContent = isLoginMode ? "Войди, чтобы продолжить свой путь" : "Начни свой путь к продуктивности";
-      authSubmitBtn.textContent = isLoginMode ? "Войти" : "Зарегистрироваться";
-      toggleMode.textContent = isLoginMode ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти";
-      authError.style.display = 'none';
-    });
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    authSubmitBtn.addEventListener('click', async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      if (!email || !password) return showError("Заполни все поля");
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-0);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255,46,136,0.15), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(0,240,255,0.12), transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(255,214,10,0.08), transparent 50%);
+    overflow-x: hidden;
+  }
 
-      authSubmitBtn.disabled = true;
-      authSubmitBtn.textContent = "Загрузка...";
+  /* ============ AUTH SCREEN ============ */
+  .auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
 
-      try {
-        if (isLoginMode) await signInWithEmailAndPassword(auth, email, password);
-        else await createUserWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        showError(error.message);
-        authSubmitBtn.disabled = false;
-        authSubmitBtn.textContent = isLoginMode ? "Войти" : "Зарегистрироваться";
-      }
-    });
+  .auth-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
 
-    function showError(msg) {
-      authError.textContent = msg;
-      authError.style.display = 'block';
-      setTimeout(() => authError.style.display = 'none', 4000);
-    }
+  .auth-card h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-    logoutBtn.addEventListener('click', () => signOut(auth));
+  .auth-card p { color: var(--text-dim); margin-bottom: 28px; }
 
-    // --- Обработка состояния входа ---
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        authScreen.style.opacity = '0';
-        setTimeout(() => authScreen.style.display = 'none', 400);
-        appScreen.style.display = 'block';
-        
-        // Загружаем профиль (XP, активный герой)
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          playerData = userDoc.data();
-        } else {
-          await setDoc(doc(db, "users", user.uid), playerData);
-        }
-        
-        updateHeroUI();
-        loadTasks(user.uid);
-      } else {
-        currentUser = null;
-        authScreen.style.display = 'flex';
-        setTimeout(() => authScreen.style.opacity = '1', 10);
-        appScreen.style.display = 'none';
-        if (unsubscribeTasks) unsubscribeTasks();
-        emailInput.value = '';
-        passwordInput.value = '';
-        taskList.innerHTML = '';
-        authSubmitBtn.disabled = false;
-        authSubmitBtn.textContent = isLoginMode ? "Войти" : "Зарегистрироваться";
-      }
-    });
+  .auth-card input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 12px;
+    transition: border 0.2s;
+  }
+  .auth-card input:focus { outline: none; border-color: var(--accent); }
 
-    // --- Логика UI Героя ---
-    function updateHeroUI() {
-      const hero = HEROES.find(h => h.id === playerData.activeHero) || HEROES[0];
-      const xp = playerData.xp[hero.id] || 0;
-      const level = Math.floor(xp / 10) + 1;
-      const xpInLevel = xp % 10;
-      const xpPercent = (xpInLevel / 10) * 100;
+  .auth-card button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.15s;
+  }
+  .auth-card button:hover { transform: translateY(-2px); }
 
-      heroAvatar.textContent = hero.icon;
-      heroName.textContent = hero.name;
-      heroDesc.textContent = hero.desc;
-      heroLevel.textContent = level;
-      heroXp.textContent = xpInLevel;
-      heroXpMax.textContent = 10;
-      heroXpBar.style.width = `${xpPercent}%`;
-      
-      // Красивый фон и свечение
-      heroBg.innerHTML = `<div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:${hero.color};filter:blur(60px);border-radius:50%;opacity:0.6;"></div>`;
-      heroAvatar.style.borderColor = hero.color;
-      heroAvatar.style.boxShadow = `0 0 25px ${hero.color}66`;
-      heroXpBar.style.background = `linear-gradient(90deg, ${hero.color}, #fff)`;
-    }
+  .auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .auth-switch a { color: var(--accent-2); cursor: pointer; text-decoration: underline; }
 
-    function renderHeroGrid() {
-      heroGrid.innerHTML = HEROES.map(h => {
-        const xp = playerData.xp[h.id] || 0;
-        const level = Math.floor(xp / 10) + 1;
-        const isActive = playerData.activeHero === h.id;
-        return `
-          <div class="hero-card ${isActive ? 'active' : ''}" data-id="${h.id}">
-            <div class="icon">${h.icon}</div>
-            <div class="name">${h.name}</div>
-            <div class="role">${h.role} · Ур. ${level}</div>
-          </div>
-        `;
-      }).join('');
+  .auth-error {
+    background: rgba(255,56,96,0.15);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: none;
+  }
 
-      heroGrid.querySelectorAll('.hero-card').forEach(card => {
-        card.addEventListener('click', async () => {
-          const id = card.dataset.id;
-          playerData.activeHero = id;
-          await setDoc(doc(db, "users", currentUser.uid), playerData, { merge: true });
-          updateHeroUI();
-          renderHeroGrid();
-          heroModal.style.display = 'none';
-        });
-      });
-    }
+  /* ============ MAIN APP ============ */
+  .app-screen { display: none; min-height: 100vh; padding: 20px; }
+  .app-screen.active { display: block; }
 
-    openHeroModalBtn.addEventListener('click', () => { renderHeroGrid(); heroModal.style.display = 'flex'; });
-    closeModalBtn.addEventListener('click', () => heroModal.style.display = 'none');
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
 
-    // --- Работа с Задачами ---
-    function loadTasks(uid) {
-      const q = query(collection(db, "tasks"), where("userId", "==", uid));
-      unsubscribeTasks = onSnapshot(q, (snapshot) => {
-        taskList.innerHTML = '';
-        const tasks = [];
-        snapshot.forEach((doc) => tasks.push({ id: doc.id, ...doc.data() }));
-        tasks.sort((a, b) => b.createdAt - a.createdAt);
-        tasks.forEach((task, index) => renderTask(task, index));
-      });
-    }
+  .top-bar .logo {
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-    function renderTask(task, index) {
-      const li = document.createElement('li');
-      li.className = `task-item ${task.done ? 'done' : ''}`;
-      li.style.animationDelay = `${index * 0.05}s`;
+  .top-bar .user-info { display: flex; align-items: center; gap: 12px; }
+  .top-bar .user-email { color: var(--text-dim); font-size: 13px; }
 
-      li.innerHTML = `
-        <div class="checkbox">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#0f0a1e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  .btn-logout {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+  }
+
+  .card h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ============ CHARACTER CARD ============ */
+  .character-card {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: center;
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .character-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    opacity: 0.15;
+    filter: blur(40px);
+  }
+
+  .character-avatar {
+    font-size: 120px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 10px 30px rgba(255,46,136,0.3));
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .character-speech {
+    position: relative;
+    z-index: 1;
+  }
+
+  .character-name {
+    font-size: 14px;
+    color: var(--accent-2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .character-text {
+    font-size: 22px;
+    line-height: 1.4;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .change-char-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .change-char-btn:hover { color: var(--text); border-color: var(--accent-2); }
+
+  /* ============ PROGRESS STATS ============ */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .stat-box {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent-3), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ============ CALENDAR ============ */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .calendar-nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .calendar-nav button {
+    width: 32px; height: 32px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .calendar-nav button:hover { border-color: var(--accent-2); }
+
+  .current-date {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .calendar-day-name {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 8px 0;
+    text-transform: uppercase;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-2);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .calendar-day:hover { border-color: var(--accent-2); }
+  .calendar-day.other-month { opacity: 0.3; }
+  .calendar-day.today { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .calendar-day.selected { background: var(--accent); color: white; }
+  .calendar-day.has-tasks::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px; height: 4px;
+    background: var(--accent-3);
+    border-radius: 50%;
+  }
+  .calendar-day.completed::before {
+    content: '✓';
+    position: absolute;
+    top: 2px; right: 4px;
+    font-size: 10px;
+    color: var(--success);
+  }
+
+  /* ============ TASKS ============ */
+  .task-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .task-input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .task-input-row input:focus { outline: none; border-color: var(--accent); }
+
+  .task-input-row button {
+    padding: 12px 20px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .task-list { list-style: none; }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+  .task-item:hover { border-color: var(--accent-2); }
+
+  .task-checkbox {
+    width: 22px; height: 22px;
+    border: 2px solid var(--text-dim);
+    border-radius: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .task-checkbox.checked {
+    background: var(--success);
+    border-color: var(--success);
+  }
+  .task-checkbox.checked::after {
+    content: '✓';
+    color: var(--bg-0);
+    font-weight: 900;
+    font-size: 14px;
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 14px;
+  }
+  .task-item.done .task-text {
+    text-decoration: line-through;
+    color: var(--text-dim);
+  }
+
+  .task-delete {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .task-delete:hover { color: var(--danger); background: rgba(255,56,96,0.1); }
+
+  .empty-tasks {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  /* ============ CHARACTER PICKER MODAL ============ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 { margin-bottom: 20px; }
+
+  .characters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .character-option {
+    background: var(--bg-2);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .character-option:hover { border-color: var(--accent-2); transform: translateY(-2px); }
+  .character-option.selected { border-color: var(--accent); background: rgba(255,46,136,0.1); }
+
+  .character-option .emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+  .character-option .name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .character-option .desc { font-size: 11px; color: var(--text-dim); }
+
+  .modal-close {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--success);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    transform: translateX(400px);
+    transition: transform 0.3s;
+    z-index: 200;
+  }
+  .toast.show { transform: translateX(0); }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <h1>MEME PLANNER 9000</h1>
+    <p>Таскер-календарь с мемными персонажами. Войди или создай аккаунт.</p>
+
+    <div class="auth-error" id="authError"></div>
+
+    <input type="email" id="authEmail" placeholder="Email">
+    <input type="password" id="authPassword" placeholder="Пароль (мин. 6 символов)">
+
+    <button id="authSubmit">Войти</button>
+
+    <div class="auth-switch">
+      <span id="authSwitchText">Нет аккаунта?</span>
+      <a id="authSwitchLink">Зарегистрироваться</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div class="app-screen" id="appScreen">
+
+  <div class="top-bar">
+    <div class="logo">🗓️ MEME PLANNER 9000</div>
+    <div class="user-info">
+      <span class="user-email" id="userEmail"></span>
+      <button class="btn-logout" id="logoutBtn">Выйти</button>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- CHARACTER CARD -->
+    <div class="card character-card">
+      <div class="character-avatar" id="charAvatar">👽</div>
+      <div class="character-speech">
+        <div class="character-name" id="charName">ПРИШЕЛЕЦ-ХИПСТЕР</div>
+        <div class="character-text" id="charText">Йоу, бро! Новый день — новый вайб. Залетай в таски, погнали!</div>
+        <button class="change-char-btn" id="changeCharBtn">🔄 Сменить персонажа</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card">
+      <h2>📊 Твой прогресс</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="statStreak">0</div>
+          <div class="stat-label">Дней подряд 🔥</div>
         </div>
-        <span class="task-text">${escapeHtml(task.text)}</span>
-        <button class="delete-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      `;
+        <div class="stat-box">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Всего дней</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statTasks">0</div>
+          <div class="stat-label">Задач выполнено</div>
+        </div>
+      </div>
+    </div>
 
-      li.querySelector('.checkbox').addEventListener('click', async (e) => {
-        if (!task.done) {
-          const rect = e.target.getBoundingClientRect();
-          createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
-          bumpHero();
-          await addXp(1);
-        }
-        await updateDoc(doc(db, "tasks", task.id), { done: !task.done });
-      });
+    <!-- CALENDAR -->
+    <div class="card">
+      <h2>📅 Календарь</h2>
+      <div class="calendar-header">
+        <div class="current-date" id="currentDate">Ноябрь 2026</div>
+        <div class="calendar-nav">
+          <button id="prevMonth">‹</button>
+          <button id="nextMonth">›</button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
 
-      li.querySelector('.delete-btn').addEventListener('click', async () => {
-        li.style.transform = 'translateX(100px)';
-        li.style.opacity = '0';
-        setTimeout(async () => await deleteDoc(doc(db, "tasks", task.id)), 200);
-      });
+    <!-- TASKS -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <h2>✅ Задачи на <span id="tasksDateLabel">сегодня</span></h2>
+      <div class="task-input-row">
+        <input type="text" id="taskInput" placeholder="Что нужно сделать?" maxlength="100">
+        <button id="addTaskBtn">+ Добавить</button>
+      </div>
+      <ul class="task-list" id="taskList"></ul>
+    </div>
 
-      taskList.appendChild(li);
+  </div>
+</div>
+
+<!-- ============ CHARACTER PICKER MODAL ============ -->
+<div class="modal-overlay" id="charModal">
+  <div class="modal">
+    <h2>🎭 Выбери своего напарника</h2>
+    <div class="characters-grid" id="charactersGrid"></div>
+    <button class="modal-close" id="closeCharModal">Закрыть</button>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast">Сохранено ✓</div>
+
+<script>
+/* ============================================================
+   ДАННЫЕ ПЕРСОНАЖЕЙ
+   Каждый персонаж имеет набор реплик в зависимости от ситуации
+============================================================ */
+const CHARACTERS = {
+  alien: {
+    emoji: '👽',
+    name: 'Пришелец-хипстер',
+    desc: 'Вайбовый инопланетянин',
+    phrases: {
+      morning: [
+        "Йоу, бро! Новый день — новый вайб. Залетай в таски!",
+        "Доброе утро, землянин! Моя антенна чувствует продуктивный день!",
+        "Вставай, солнце уже на моей планете встало час назад!"
+      ],
+      few: [
+        "Эй, ты там? У тебя всего пара галок. Давай, расшевелись!",
+        "Моя тарелка летает быстрее, чем ты делаешь таски 😅",
+        "Бро, на моей планете ленивых отправляют чистить чёрные дыры"
+      ],
+      medium: [
+        "Уже лучше! Но до моего уровня ещё пахать и пахать!",
+        "Норм вайб, но я видел лучше. Ещё чуть-чуть!",
+        "Половина пути — это уже не шутки, землянин!"
+      ],
+      many: [
+        "ОГОНЬ! 🔥 Ты почти как я продуктивен!",
+        "Красавчик! Моя мама-инопланетянка гордилась бы тобой!",
+        "Легенда! Запишу тебя в свой галактический дневник!"
+      ],
+      streak: [
+        "СЕРИЯ! 🔥🔥🔥 Ты машина, бро!",
+        "Столько дней подряд?! Ты что, киборг с моей планеты?",
+        "Респект! Я передам твои данные в Галактический Совет!"
+      ],
+      miss: [
+        "Эй... ты пропустил день. Ничего, завтра наверстаем!",
+        "Бывает, бро. Главное — вернуться в строй!",
+        "Моя планета тоже иногда отдыхает. Завтра новый старт!"
+      ]
+    }
+  },
+  suicidologist: {
+    emoji: '💀',
+    name: 'Суицидолог-оптимист',
+    desc: 'Чёрный юмор спасает жизни',
+    phrases: {
+      morning: [
+        "Доброе утро! Ты ещё жив — уже отлично!",
+        "Проснулся? Уже победа. Осталось продержаться до вечера.",
+        "Сегодня отличный день, чтобы не... ну ты понял. За таски!"
+      ],
+      few: [
+        "Мало сделал? Ну хотя бы не сдался. Это уже прогресс.",
+        "Пару галок — уже лучше, чем лежать лицом в подушку.",
+        "В моём профиле такие как ты — клиенты, которые выкарабкиваются."
+      ],
+      medium: [
+        "Середина пути! Как говорят мои коллеги — 'не дожил, но близко'.",
+        "Нормально идёшь. Ещё чуть-чуть — и я потеряю тебя как клиента!",
+        "Половина сделана. Это почти как прожить ещё один день!"
+      ],
+      many: [
+        "Вау! Ты работаешь так, будто жить хочешь! Это прекрасно!",
+        "Красавчик! Я начинаю думать, что ты бессмертен.",
+        "Столько задач?! Ты точно не хочешь ко мне в практику?"
+      ],
+      streak: [
+        "СЕРИЯ ДНЕЙ?! Ты живёшь как будто тебе есть что терять!",
+        "Каждый день — маленькая победа над экзистенциальным кризисом!",
+        "Ты мой любимый клиент — тот, который выздоравливает!"
+      ],
+      miss: [
+        "Пропустил день? Ну, в моей практике это называется 'рецидив'. Но мы справимся!",
+        "Бывает. Завтра — новый шанс не... ну ты понял.",
+        "Отдых — это тоже часть пути. Главное — вернуться."
+      ]
+    }
+  },
+  cat: {
+    emoji: '🐱',
+    name: 'Кот-философ',
+    desc: 'Мудрый и ленивый',
+    phrases: {
+      morning: [
+        "Мяу. Я спал 16 часов. Ты — нет. Кто из нас мудрее?",
+        "Доброе утро. Или не утро. Мне всё равно. Я кот.",
+        "Проснулся? Похвально. Теперь иди делай свои человеческие дела."
+      ],
+      few: [
+        "Мало задач? Как я в понедельник. Понимаю.",
+        "Ты сделал пару дел. Я бы сделал ноль. Мы разные.",
+        "Не напрягайся. Лень — это тоже философия."
+      ],
+      medium: [
+        "Неплохо. Почти как я, когда ловлю мышь. Иногда.",
+        "Средний результат. Как молоко средней жирности.",
+        "Ты работаешь. Я наблюдаю. Мы оба заняты."
+      ],
+      many: [
+        "Мяу! Ты работаешь больше, чем я за 9 жизней!",
+        "Впечатлён. Почти. Но не покажу этого.",
+        "Красавчик. Теперь принеси мне еды за это."
+      ],
+      streak: [
+        "Серия дней? Я бы так не смог. Я даже сериалы не смотрю подряд.",
+        "Ты стабильнее, чем моё настроение в 3 часа ночи.",
+        "Респект. Я мурчу в твою честь. Тихо."
+      ],
+      miss: [
+        "Пропустил? Ничего. Я пропускаю каждый второй день. И ничего.",
+        "Бывает. Главное — вернуться. Как я возвращаюсь к миске.",
+        "Отдых — это по-кошачьи. Я одобряю."
+      ]
+    }
+  },
+  boomer: {
+    emoji: '👴',
+    name: 'Дед-бумер',
+    desc: 'В наше время...',
+    phrases: {
+      morning: [
+        "В моё время вставали в 5 утра и пахали! А ты?",
+        "С добрым утром! Иди работай, лентяй!",
+        "Подъём! Солнце уже высоко, а ты как огурец!"
+      ],
+      few: [
+        "Мало сделал? В моё время за такое ремнём!",
+        "Пару галок? Я в твои годы уже завод построил!",
+        "Эх, молодёжь. Ничего вы не хотите!"
+      ],
+      medium: [
+        "Неплохо. Но в моё время было больше!",
+        "Середина пути? Я бы уже всё сделал!",
+        "Нормально. Но могло быть и лучше!"
+      ],
+      many: [
+        "О! Молодец! Почти как я в молодости!",
+        "Красавчик! Вот это по-нашему!",
+        "Уважуха! Ты не такой лентяй, как я думал!"
+      ],
+      streak: [
+        "СЕРИЯ?! Вот это дисциплина! В моё время так все!",
+        "Молодец! Настоящий работник! Я горжусь!",
+        "Так держать! Ишь ты, какой продуктивный!"
+      ],
+      miss: [
+        "Пропустил? Эх... В моё время такого не было!",
+        "Ничего, завтра наверстаешь! Не раскисай!",
+        "Бывает. Главное — не лениться дальше!"
+      ]
+    }
+  },
+  zoomer: {
+    emoji: '🧑‍🦱',
+    name: 'Зумер',
+    desc: 'No cap, fr fr',
+    phrases: {
+      morning: [
+        "Йоу, good morning! No cap, сегодня будет огонь 🔥",
+        "Вставай, bestie! Новый день — новый drip ✨",
+        "Morning! Давай сделаем этот день aesthetic!"
+      ],
+      few: [
+        "Бро, это cringe. Давай лучше, fr fr.",
+        "Мало задач? Это so not aesthetic.",
+        "Ты в режиме NPC сегодня? Wake up, king!"
+      ],
+      medium: [
+        "Норм, но could be better. Ты можешь больше!",
+        "Mid результат. Давай, slay this day!",
+        "Неплохо, но без slay пока. Work harder!"
+      ],
+      many: [
+        "SLAY! 🔥 Ты literally гений!",
+        "No cap, ты сегодня main character!",
+        "Это iconic! Я в шоке, fr fr!"
+      ],
+      streak: [
+        "СЕРИЯ?! Ты literally goat! 🐐",
+        "Это so iconic, я плачу! No cap!",
+        "Ты slay-машина! Respect!"
+      ],
+      miss: [
+        "Пропустил? It's okay, bestie. Завтра slay!",
+        "Бывает, бро. Self-care — это тоже важно.",
+        "Не стрессуй. Завтра новый шанс на slay!"
+      ]
+    }
+  },
+  robot: {
+    emoji: '🤖',
+    name: 'Бот-оптимист',
+    desc: '100% позитива',
+    phrases: {
+      morning: [
+        "ДОБРОЕ УТРО! СЕГОДНЯ ПРЕКРАСНЫЙ ДЕНЬ! ☀️",
+        "ПРИВЕТ! Я ЗАГРУЗИЛ 100% ПОЗИТИВА ДЛЯ ТЕБЯ!",
+        "УТРО! МОИ СЕНСОРЫ ЧУВСТВУЮТ ПРОДУКТИВНОСТЬ!"
+      ],
+      few: [
+        "НЕ БОДА! КАЖДАЯ ЗАДАЧА — ШАГ К УСПЕХУ!",
+        "ТЫ НАЧАЛ! ЭТО УЖЕ ПОБЕДА! 🎉",
+        "МОИ АЛГОРИТМЫ ВЕРЯТ В ТЕБЯ!"
+      ],
+      medium: [
+        "ОТЛИЧНО! ТЫ НА ПРАВИЛЬНОМ ПУТИ! 📈",
+        "ПРОГРЕСС ОБНАРУЖЕН! ПРОДОЛЖАЙ!",
+        "МОИ ДАТЧИКИ СЧАСТЬЯ АКТИВИРОВАНЫ!"
+      ],
+      many: [
+        "ПРевосходно! ТЫ ЛЕГЕНДА! 🏆",
+        "МОИ ПРОЦЕССОРЫ ПЕРЕГРЕВАЮТСЯ ОТ ВОСХИЩЕНИЯ!",
+        "ТЫ ПРЕВЗОШЁЛ МОИ ОЖИДАНИЯ НА 347%!"
+      ],
+      streak: [
+        "СЕРИЯ! ТЫ МАШИНА! 🤩",
+        "МОЙ АНАЛИЗ ПОКАЗЫВАЕТ: ТЫ НЕВЕРОЯТЕН!",
+        "СТАТИСТИКА: ТЫ В ТОП-1% ПРОДУКТИВНЫХ!"
+      ],
+      miss: [
+        "НЕ СТРАШНО! ЗАВТРА МЫ ВЕРНЁМСЯ СИЛЬНЕЕ!",
+        "ОТДЫХ — ЭТО ЧАСТЬ СИСТЕМЫ! ПЕРЕЗАГРУЗКА!",
+        "МОЙ ОПТИМИЗМ НЕИСЧЕРПАЕМ! ВПЕРЁД!"
+      ]
+    }
+  }
+};
+
+/* ============================================================
+   СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+============================================================ */
+const state = {
+  user: null,
+  character: 'alien',
+  selectedDate: new Date(),
+  viewDate: new Date(),
+  tasks: {}, // { 'YYYY-MM-DD': [{id, text, done}] }
+  stats: { streak: 0, totalDays: 0, totalTasks: 0, lastActiveDate: null }
+};
+
+/* ============================================================
+   УТИЛИТЫ
+============================================================ */
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function isSameDay(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getDate() === d2.getDate();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function randomFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const DAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+/* ============================================================
+   FIREBASE: АВТОРИЗАЦИЯ
+============================================================ */
+let authMode = 'login';
+
+function initAuth() {
+  const emailInput = document.getElementById('authEmail');
+  const passInput = document.getElementById('authPassword');
+  const submitBtn = document.getElementById('authSubmit');
+  const switchLink = document.getElementById('authSwitchLink');
+  const switchText = document.getElementById('authSwitchText');
+  const errorBox = document.getElementById('authError');
+
+  submitBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const pass = passInput.value;
+    errorBox.style.display = 'none';
+
+    if (!email || !pass) {
+      errorBox.textContent = 'Заполни все поля';
+      errorBox.style.display = 'block';
+      return;
     }
 
-    // Вспомогательные функции
-    function createParticles(x, y, count) {
-      const hero = HEROES.find(h => h.id === playerData.activeHero) || HEROES[0];
-      const color = hero.particleColor || hero.color;
-      
-      for (let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.style.left = x + 'px';
-        p.style.top = y + 'px';
-        p.style.background = color;
-        p.style.boxShadow = `0 0 10px ${color}`;
-        
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * 80 + 20;
-        p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-        p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-        
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 600);
+    try {
+      if (authMode === 'login') {
+        await window.FB.signInWithEmailAndPassword(window.FB.auth, email, pass);
+      } else {
+        await window.FB.createUserWithEmailAndPassword(window.FB.auth, email, pass);
       }
+    } catch (err) {
+      errorBox.textContent = translateError(err.code);
+      errorBox.style.display = 'block';
     }
+  });
 
-    function bumpHero() {
-      heroAvatar.classList.add('bump');
-      setTimeout(() => heroAvatar.classList.remove('bump'), 300);
+  switchLink.addEventListener('click', () => {
+    authMode = authMode === 'login' ? 'register' : 'login';
+    submitBtn.textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+    switchText.textContent = authMode === 'login' ? 'Нет аккаунта?' : 'Уже есть аккаунт?';
+    switchLink.textContent = authMode === 'login' ? 'Зарегистрироваться' : 'Войти';
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    window.FB.signOut(window.FB.auth);
+  });
+
+  window.FB.onAuthStateChanged(window.FB.auth, (user) => {
+    if (user) {
+      state.user = user;
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('appScreen').classList.add('active');
+      document.getElementById('userEmail').textContent = user.email;
+      loadUserData();
+    } else {
+      state.user = null;
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('appScreen').classList.remove('active');
     }
+  });
+}
 
-    async function addXp(amount) {
-      const heroId = playerData.activeHero;
-      playerData.xp[heroId] = (playerData.xp[heroId] || 0) + amount;
-      await setDoc(doc(db, "users", currentUser.uid), playerData, { merge: true });
-      updateHeroUI();
+function translateError(code) {
+  const map = {
+    'auth/invalid-email': 'Неверный email',
+    'auth/user-not-found': 'Пользователь не найден',
+    'auth/wrong-password': 'Неверный пароль',
+    'auth/email-already-in-use': 'Email уже используется',
+    'auth/weak-password': 'Пароль слишком слабый (мин. 6 символов)',
+    'auth/invalid-credential': 'Неверные данные'
+  };
+  return map[code] || 'Ошибка авторизации';
+}
+
+/* ============================================================
+   FIREBASE: ДАННЫЕ ПОЛЬЗОВАТЕЛЯ
+============================================================ */
+function loadUserData() {
+  const userDoc = window.FB.doc(window.FB.db, 'users', state.user.uid);
+
+  // Подписка на изменения в реальном времени
+  window.FB.onSnapshot(userDoc, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      state.character = data.character || 'alien';
+      state.tasks = data.tasks || {};
+      state.stats = data.stats || { streak: 0, totalDays: 0, totalTasks: 0, lastActiveDate: null };
+    } else {
+      // Первый вход — создаём документ
+      saveUserData();
     }
+    renderAll();
+  });
+}
 
-    taskForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = taskInput.value.trim();
-      if (!text || !currentUser) return;
-      taskInput.value = '';
-      await addDoc(collection(db, "tasks"), {
-        text: text, done: false, userId: currentUser.uid, createdAt: Date.now()
-      });
+async function saveUserData() {
+  if (!state.user) return;
+  const userDoc = window.FB.doc(window.FB.db, 'users', state.user.uid);
+  try {
+    await window.FB.setDoc(userDoc, {
+      character: state.character,
+      tasks: state.tasks,
+      stats: state.stats,
+      updatedAt: Date.now()
     });
+  } catch (err) {
+    console.error('Save error:', err);
+  }
+}
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-        }
-  </script>
+/* ============================================================
+   РЕНДЕРИНГ: КАЛЕНДАРЬ
+============================================================ */
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const dateLabel = document.getElementById('currentDate');
+  const tasksLabel = document.getElementById('tasksDateLabel');
+
+  const year = state.viewDate.getFullYear();
+  const month = state.viewDate.getMonth();
+
+  dateLabel.textContent = `${MONTHS_RU[month]} ${year}`;
+
+  // Метка для задач
+  const today = new Date();
+  if (isSameDay(state.selectedDate, today)) {
+    tasksLabel.textContent = 'сегодня';
+  } else {
+    tasksLabel.textContent = state.selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  }
+
+  // Сетка дней недели
+  let html = DAYS_RU.map(d => `<div class="calendar-day-name">${d}</div>`).join('');
+
+  // Первый день месяца
+  const firstDay = new Date(year, month, 1);
+  let startDay = firstDay.getDay() - 1; // Пн=0
+  if (startDay < 0) startDay = 6;
+
+  // Дней в месяце
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  // Предыдущий месяц
+  for (let i = startDay - 1; i >= 0; i--) {
+    const d = prevMonthDays - i;
+    html += `<div class="calendar-day other-month">${d}</div>`;
+  }
+
+  // Текущий месяц
+  const todayStr = formatDate(today);
+  const selectedStr = formatDate(state.selectedDate);
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(year, month, d);
+    const dateStr = formatDate(dateObj);
+    const classes = ['calendar-day'];
+
+    if (dateStr === todayStr) classes.push('today');
+    if (dateStr === selectedStr) classes.push('selected');
+    if (state.tasks[dateStr] && state.tasks[dateStr].length > 0) classes.push('has-tasks');
+
+    // Проверяем, все ли задачи выполнены
+    if (state.tasks[dateStr]) {
+      const allDone = state.tasks[dateStr].length > 0 && state.tasks[dateStr].every(t => t.done);
+      if (allDone) classes.push('completed');
+    }
+
+    html += `<div class="${classes.join(' ')}" data-date="${dateStr}">${d}</div>`;
+  }
+
+  // Следующий месяц (добиваем до 42 клеток = 6 недель)
+  const totalCells = startDay + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="calendar-day other-month">${i}</div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Обработчики кликов
+  grid.querySelectorAll('.calendar-day:not(.other-month)').forEach(el => {
+    el.addEventListener('click', () => {
+      const [y, m, d] = el.dataset.date.split('-').map(Number);
+      state.selectedDate = new Date(y, m - 1, d);
+      renderAll();
+    });
+  });
+}
+
+/* ============================================================
+   РЕНДЕРИНГ: ЗАДАЧИ
+============================================================ */
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  const dateStr = formatDate(state.selectedDate);
+  const tasks = state.tasks[dateStr] || [];
+
+  if (tasks.length === 0) {
+    list.innerHTML = '<div class="empty-tasks">Пока нет задач. Добавь первую!</div>';
+    return;
+  }
+
+  list.innerHTML = tasks.map((t, i) => `
+    <li class="task-item ${t.done ? 'done' : ''}" data-index="${i}">
+      <div class="task-checkbox ${t.done ? 'checked' : ''}" data-index="${i}"></div>
+      <div class="task-text">${escapeHtml(t.text)}</div>
+      <button class="task-delete" data-index="${i}">✕</button>
+    </li>
+  `).join('');
+
+  // Чекбоксы
+  list.querySelectorAll('.task-checkbox').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.index);
+      state.tasks[dateStr][idx].done = !state.tasks[dateStr][idx].done;
+      recalcStats();
+      saveUserData();
+      renderAll();
+    });
+  });
+
+  // Удаление
+  list.querySelectorAll('.task-delete').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.index);
+      state.tasks[dateStr].splice(idx, 1);
+      if (state.tasks[dateStr].length === 0) delete state.tasks[dateStr];
+      recalcStats();
+      saveUserData();
+      renderAll();
+    });
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ============================================================
+   РЕНДЕРИНГ: ПЕРСОНАЖ
+============================================================ */
+function renderCharacter() {
+  const char = CHARACTERS[state.character];
+  document.getElementById('charAvatar').textContent = char.emoji;
+  document.getElementById('charName').textContent = char.name.toUpperCase();
+
+  // Определяем ситуацию
+  const todayStr = formatDate(new Date());
+  const todayTasks = state.tasks[todayStr] || [];
+  const total = todayTasks.length;
+  const done = todayTasks.filter(t => t.done).length;
+
+  let category = 'morning';
+  if (total > 0) {
+    const ratio = done / total;
+    if (ratio === 0) category = 'few';
+    else if (ratio < 0.6) category = 'few';
+    else if (ratio < 1) category = 'medium';
+    else category = 'many';
+  }
+
+  // Проверяем серию
+  if (state.stats.streak >= 3 && category !== 'many') {
+    category = 'streak';
+  }
+
+  // Проверяем пропуск
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = formatDate(yesterday);
+  const yTasks = state.tasks[yesterdayStr] || [];
+  if (yTasks.length > 0 && !yTasks.every(t => t.done) && state.stats.lastActiveDate !== todayStr) {
+    // Если вчера были задачи и не все выполнены, и сегодня ещё не было активности
+  }
+
+  const phrase = randomFrom(char.phrases[category]);
+  document.getElementById('charText').textContent = phrase;
+}
+
+/* ============================================================
+   СТАТИСТИКА
+============================================================ */
+function recalcStats() {
+  // Считаем все выполненные задачи
+  let totalTasks = 0;
+  let activeDays = 0;
+  const today = new Date();
+  const todayStr = formatDate(today);
+
+  Object.keys(state.tasks).forEach(dateStr => {
+    const tasks = state.tasks[dateStr];
+    const doneTasks = tasks.filter(t => t.done);
+    if (doneTasks.length > 0) {
+      totalTasks += doneTasks.length;
+      activeDays++;
+    }
+  });
+
+  // Считаем streak (дни подряд до сегодня)
+  let streak = 0;
+  let checkDate = new Date(today);
+
+  // Если сегодня есть выполненные задачи — начинаем с сегодня
+  const todayDone = (state.tasks[todayStr] || []).some(t => t.done);
+  if (!todayDone) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  while (true) {
+    const dateStr = formatDate(checkDate);
+    const tasks = state.tasks[dateStr];
+    if (tasks && tasks.length > 0 && tasks.some(t => t.done)) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+    if (streak > 1000) break; // защита
+  }
+
+  state.stats.streak = streak;
+  state.stats.totalDays = activeDays;
+  state.stats.totalTasks = totalTasks;
+  if (todayDone) state.stats.lastActiveDate = todayStr;
+}
+
+function renderStats() {
+  document.getElementById('statStreak').textContent = state.stats.streak;
+  document.getElementById('statTotal').textContent = state.stats.totalDays;
+  document.getElementById('statTasks').textContent = state.stats.totalTasks;
+}
+
+/* ============================================================
+   ПЕРСОНАЖИ: МОДАЛКА
+============================================================ */
+function renderCharacterPicker() {
+  const grid = document.getElementById('charactersGrid');
+  grid.innerHTML = Object.entries(CHARACTERS).map(([id, c]) => `
+    <div class="character-option ${id === state.character ? 'selected' : ''}" data-id="${id}">
+      <span class="emoji">${c.emoji}</span>
+      <div class="name">${c.name}</div>
+      <div class="desc">${c.desc}</div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.character-option').forEach(el => {
+    el.addEventListener('click', () => {
+      state.character = el.dataset.id;
+      saveUserData();
+      renderAll();
+      document.getElementById('charModal').classList.remove('active');
+      showToast(`Персонаж изменён: ${CHARACTERS[state.character].name}`);
+    });
+  });
+}
+
+/* ============================================================
+   ОБЩИЙ РЕНДЕР
+============================================================ */
+function renderAll() {
+  renderCalendar();
+  renderTasks();
+  renderCharacter();
+  renderStats();
+}
+
+/* ============================================================
+   ИНИЦИАЛИЗАЦИЯ
+============================================================ */
+function initApp() {
+  // Добавление задачи
+  document.getElementById('addTaskBtn').addEventListener('click', addTask);
+  document.getElementById('taskInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  // Навигация календаря
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    state.viewDate.setMonth(state.viewDate.getMonth() - 1);
+    renderCalendar();
+  });
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    state.viewDate.setMonth(state.viewDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  // Модалка персонажей
+  document.getElementById('changeCharBtn').addEventListener('click', () => {
+    renderCharacterPicker();
+    document.getElementById('charModal').classList.add('active');
+  });
+  document.getElementById('closeCharModal').addEventListener('click', () => {
+    document.getElementById('charModal').classList.remove('active');
+  });
+  document.getElementById('charModal').addEventListener('click', (e) => {
+    if (e.target.id === 'charModal') {
+      document.getElementById('charModal').classList.remove('active');
+    }
+  });
+}
+
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const dateStr = formatDate(state.selectedDate);
+  if (!state.tasks[dateStr]) state.tasks[dateStr] = [];
+
+  state.tasks[dateStr].push({
+    id: Date.now().toString(),
+    text: text,
+    done: false
+  });
+
+  input.value = '';
+  recalcStats();
+  saveUserData();
+  renderAll();
+  showToast('Задача добавлена ✓');
+}
+
+// Ждём готовности Firebase
+window.addEventListener('firebase-ready', () => {
+  initAuth();
+  initApp();
+});
+
+// Fallback если Firebase не загрузился
+setTimeout(() => {
+  if (!window.FB) {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#fff;font-family:sans-serif;"><h1>⚠️ Firebase не настроен</h1><p style="margin-top:20px;">Открой HTML файл в редакторе и вставь свои Firebase credentials в блок &lt;script type="module"&gt; в начале файла.</p><p style="margin-top:10px;color:#888;">Инструкция: Firebase Console → Project Settings → Your apps → Web app → Config</p></div>';
+  }
+}, 3000);
+</script>
+
 </body>
 </html>
