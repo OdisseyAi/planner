@@ -14,7 +14,7 @@
      ═══════════════════════════════════════════════════════════════════ -->
 <script>
 window.MP_CONFIG = {
- apiKey: "AIzaSyAFa5oUPiBaQ23WL5h_Ud4au5uE0LViH2Y",
+apiKey: "AIzaSyAFa5oUPiBaQ23WL5h_Ud4au5uE0LViH2Y",
   authDomain: "planer-3faf6.firebaseapp.com",
   projectId: "planer-3faf6",
   storageBucket: "planer-3faf6.firebasestorage.app",
@@ -87,7 +87,7 @@ button{cursor:pointer;border:none;background:none}
 .diag.bad{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.4);color:#ffe6a8}
 .diag b{color:#fff;display:block;margin-bottom:5px;font-size:13px}
 .diag code{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.35);padding:2px 6px;border-radius:5px;color:var(--amber)}
-.diag ol{margin:8px 0 0 17px;display:grid;gap:4px}
+.diag .lock{display:block;margin-top:7px;opacity:.85;font-size:11.5px}
 .sep{display:flex;align-items:center;gap:12px;color:var(--dim2);font-size:11px;margin:16px 0;font-family:var(--mono);letter-spacing:.2em}
 .sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--line)}
 .topbar{position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px;background:rgba(14,9,26,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
@@ -361,7 +361,6 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
 <div class="grain"></div>
 <canvas id="fx"></canvas>
 
-<!-- ЭКРАН ВХОДА — виден сразу при открытии -->
 <section class="auth" id="authScreen">
   <div class="auth-cast" id="authCast"></div>
   <div class="auth-card">
@@ -383,7 +382,6 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
   </div>
 </section>
 
-<!-- ПРИЛОЖЕНИЕ -->
 <div id="app" class="hidden">
   <header class="topbar">
     <div class="logo"><span class="dot"></span>MEME <em>PLANNER</em> 9000</div>
@@ -1581,8 +1579,8 @@ function drawerSave(){
 function trErr(code){
   return {'auth/invalid-email':'Неверный формат email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль',
    'auth/email-already-in-use':'Этот email уже зарегистрирован','auth/weak-password':'Пароль слишком простой (мин. 6 символов)',
-   'auth/invalid-credential':'Неверный email или пароль','auth/invalid-api-key':'apiKey неверный — проверь блок MP_CONFIG в начале файла',
-   'auth/api-key-not-valid':'apiKey не подходит к этому проекту',
+   'auth/invalid-credential':'Неверный email или пароль','auth/invalid-api-key':'Ключ настроен неверно — проверь блок MP_CONFIG в начале файла',
+   'auth/api-key-not-valid':'Ключ не подходит к этому проекту',
    'auth/configuration-not-found':'Включи Email/Password в Firebase Console → Authentication',
    'auth/operation-not-allowed':'Включи способ входа Email/Password в консоли',
    'auth/too-many-requests':'Слишком много попыток, подожди немного',
@@ -1652,7 +1650,7 @@ function bind(){
   $('#backBtn').onclick=function(){ SFX.play('tick'); $('#authScreen').classList.add('hidden'); $('#app').classList.remove('hidden'); };
   $('#loginBtn').onclick=function(){ SFX.play('tick'); showAuth(); };
   $('#bannerLogin').onclick=function(){ SFX.play('tick'); showAuth(); };
-  $('#syncChip').onclick=function(){ SFX.play('tick'); if(Store.mode==='demo') showAuth(); else toast('Синхронизация активна','ok','Данные в Firestore проекта'); };
+  $('#syncChip').onclick=function(){ SFX.play('tick'); if(Store.mode==='demo') showAuth(); else toast('Синхронизация активна','ok','Данные защищены правилами доступа'); };
 
   $('#dPrev').onclick=function(){ ui.sel=addDays(ui.sel,-1); ui.view=new Date(ui.sel); ui.editing=null; SFX.play('tick'); render(); };
   $('#dNext').onclick=function(){ ui.sel=addDays(ui.sel,1); ui.view=new Date(ui.sel); ui.editing=null; SFX.play('tick'); render(); };
@@ -1809,7 +1807,7 @@ function boot(){
       var app=A.initializeApp(cfg),auth=U.getAuth(app),db=F.getFirestore(app);
       FB={auth:auth,db:db,doc:F.doc,setDoc:F.setDoc,onSnapshot:F.onSnapshot,signOut:U.signOut,
           signIn:U.signInWithEmailAndPassword,signUp:U.createUserWithEmailAndPassword};
-      setDiag('good','<b>✅ Облако подключено</b>Проект <code>'+esc(cfg.projectId)+'</code>. Входи или создавай аккаунт — данные будут на всех устройствах.');
+      setDiag('good','<b>✅ Облако подключено</b>Входи или создавай аккаунт — задачи, серии и напарник будут одинаковыми на всех твоих устройствах.<span class="lock">🔒 Каждый видит только свои данные: доступ закрыт правилами Firestore.</span>');
       lockAuth(false);
       U.onAuthStateChanged(auth,function(user){
         if(user){ Store.startCloud(user); enterApp(); }
