@@ -4,8 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0713">
-<title>MEME PLANNER 9000</title>
-<script src="firebase-config.js"></script>
+<title>MEME PLANNER 9000 — таскер с характером</title>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     ЕДИНСТВЕННОЕ МЕСТО, ГДЕ НУЖНО ВСТАВИТЬ КЛЮЧИ. ЗАПОЛНИ ОДИН РАЗ.
+     Firebase Console → Project settings → Your apps → Web app → Config
+     Замени значения PASTE_... на свои. Больше нигде ничего менять не надо.
+     После этого все пользователи увидят форму входа и смогут регистрироваться.
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+window.MP_CONFIG = {
+ apiKey: "AIzaSyAFa5oUPiBaQ23WL5h_Ud4au5uE0LViH2Y",
+  authDomain: "planer-3faf6.firebaseapp.com",
+  projectId: "planer-3faf6",
+  storageBucket: "planer-3faf6.firebasestorage.app",
+  messagingSenderId: "691593396267",
+  appId: "1:691593396267:web:d7f7e34cff75239146aa6e"
+};
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -29,6 +46,7 @@ button{cursor:pointer;border:none;background:none}
 ::-webkit-scrollbar{width:11px;height:11px}
 ::-webkit-scrollbar-track{background:var(--surf2);border-radius:99px}
 ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--mag),var(--violet));border-radius:99px;border:2px solid var(--surf2)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--cyan),var(--mag))}
 .bg{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(120% 90% at 50% -10%,#1a1030 0%,var(--ink) 60%)}
 .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.4;will-change:transform}
 .b1{width:46vw;height:46vw;left:-10vw;top:-8vw;background:var(--mag);animation:dr1 34s ease-in-out infinite alternate}
@@ -42,10 +60,12 @@ button{cursor:pointer;border:none;background:none}
 #fx{position:fixed;inset:0;z-index:900;pointer-events:none}
 .fld{width:100%;padding:14px 16px;background:rgba(10,6,20,.7);border:1px solid var(--line);border-radius:14px;outline:none;font-size:15px;transition:.18s;margin-bottom:10px}
 .fld:focus{border-color:var(--mag);box-shadow:0 0 0 4px rgba(255,46,136,.14)}
+.fld:disabled{opacity:.5;cursor:not-allowed}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:14px;font-weight:700;font-size:15px;background:linear-gradient(100deg,var(--mag),var(--violet) 60%,var(--cyan));color:#fff;transition:transform .15s,filter .2s;box-shadow:0 10px 26px rgba(255,46,136,.28)}
 .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
 .btn:active{transform:translateY(0) scale(.985)}
 .btn.w{width:100%}
+.btn.sm{padding:11px 16px;font-size:13.5px;border-radius:12px}
 .btn.ghost{background:rgba(255,255,255,.05);border:1px solid var(--line2);box-shadow:none;color:var(--tx)}
 .btn.ghost:hover{border-color:var(--cyan);background:rgba(34,211,238,.09)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:grayscale(.5)}
@@ -53,16 +73,21 @@ button{cursor:pointer;border:none;background:none}
 .auth-cast{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .auth-cast .fp{position:absolute;width:104px;height:104px;border-radius:28px;overflow:hidden;opacity:.22;box-shadow:0 16px 40px rgba(0,0,0,.5);animation:bob 12s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-26px) rotate(5deg)}}
-.auth-card{position:relative;width:min(460px,100%);background:linear-gradient(160deg,rgba(38,26,64,.96),rgba(19,13,34,.98));border:1px solid var(--line2);border-radius:28px;padding:34px;box-shadow:var(--sh);backdrop-filter:blur(18px);animation:rise .7s cubic-bezier(.2,.9,.25,1) both}
+.auth-card{position:relative;width:min(470px,100%);background:linear-gradient(160deg,rgba(38,26,64,.96),rgba(19,13,34,.98));border:1px solid var(--line2);border-radius:28px;padding:34px;box-shadow:var(--sh);backdrop-filter:blur(18px);animation:rise .7s cubic-bezier(.2,.9,.25,1) both}
 .auth-card::before{content:'';position:absolute;inset:-1px;border-radius:29px;padding:1px;pointer-events:none;background:linear-gradient(140deg,var(--mag),transparent 40%,var(--cyan));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .brandline{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--cyan);text-transform:uppercase;margin-bottom:12px}
 .auth-card h1{font-family:var(--disp);font-weight:900;font-size:clamp(28px,6vw,38px);line-height:1.02;letter-spacing:-.02em;background:linear-gradient(100deg,var(--mag) 10%,var(--amber) 50%,var(--cyan) 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.auth-card .tag{color:var(--dim);margin:12px 0 22px;font-size:14.5px}
+.auth-card .tag{color:var(--dim);margin:12px 0 20px;font-size:14.5px}
 .auth-sw{text-align:center;margin-top:16px;color:var(--dim);font-size:13.5px}
 .auth-sw b{color:var(--cyan);cursor:pointer;border-bottom:1px dashed currentColor}
 .err{display:none;background:rgba(251,77,92,.13);border:1px solid rgba(251,77,92,.5);color:#ffa8b1;padding:10px 12px;border-radius:12px;font-size:13px;margin-bottom:12px}
-.note{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);color:#bfeaf5;padding:11px 13px;border-radius:12px;font-size:12.5px;margin-bottom:16px}
-.note b{color:var(--cyan)}
+.diag{border-radius:14px;padding:13px 15px;font-size:12.5px;margin-bottom:16px;line-height:1.5}
+.diag.wait{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.32);color:#bfeaf5}
+.diag.good{background:rgba(74,222,128,.09);border:1px solid rgba(74,222,128,.38);color:#b6f5cd}
+.diag.bad{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.4);color:#ffe6a8}
+.diag b{color:#fff;display:block;margin-bottom:5px;font-size:13px}
+.diag code{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.35);padding:2px 6px;border-radius:5px;color:var(--amber)}
+.diag ol{margin:8px 0 0 17px;display:grid;gap:4px}
 .sep{display:flex;align-items:center;gap:12px;color:var(--dim2);font-size:11px;margin:16px 0;font-family:var(--mono);letter-spacing:.2em}
 .sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--line)}
 .topbar{position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px;background:rgba(14,9,26,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
@@ -81,9 +106,12 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
 .icon-btn:hover{border-color:var(--cyan);background:rgba(34,211,238,.1);transform:translateY(-1px)}
 .icon-btn.off{color:var(--dim2)}
 .icon-btn.danger:hover{border-color:var(--bad);background:rgba(251,77,92,.12);color:#ffb3ba}
+.icon-btn.accent{border-color:rgba(255,46,136,.5);color:#ffb0d0;background:rgba(255,46,136,.1)}
+.icon-btn.accent:hover{background:rgba(255,46,136,.2);border-color:var(--mag)}
 .who{font-size:12px;color:var(--dim);font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 -4px;padding:12px 16px;border-radius:16px;background:linear-gradient(100deg,rgba(139,92,246,.16),rgba(34,211,238,.1));border:1px solid rgba(139,92,246,.34);font-size:13px}
 .banner b{color:#e2d5ff}
+.banner .bx{margin-left:auto}
 .wrap{max-width:1500px;margin:0 auto;padding:18px}
 .grid{display:grid;gap:18px;grid-template-columns:minmax(0,1.42fr) minmax(0,1fr);grid-template-areas:"tasks mate" "tasks cal" "prog prog";align-items:stretch}
 .card{background:linear-gradient(165deg,rgba(30,21,51,.92),rgba(19,13,34,.94));border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--sh);position:relative;min-width:0;animation:rise .6s cubic-bezier(.2,.9,.25,1) both}
@@ -260,7 +288,7 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
 .modal{position:fixed;inset:0;z-index:200;background:var(--scrim);backdrop-filter:blur(12px);display:grid;place-items:center;padding:20px;animation:fade .25s both}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .sheet{width:min(1000px,100%);max-height:88dvh;display:flex;flex-direction:column;background:linear-gradient(165deg,#241a3f,#150f24);border:1px solid var(--line2);border-radius:26px;padding:26px;box-shadow:var(--sh);animation:rise .4s cubic-bezier(.2,.9,.25,1) both}
-.sheet.narrow{width:min(440px,100%)}
+.sheet.narrow{width:min(560px,100%)}
 .sheet h2{font-family:var(--disp);font-size:19px;margin-bottom:5px}
 .sheet .sub{color:var(--dim);font-size:13px;margin-bottom:18px}
 .sbody{overflow-y:auto;padding-right:6px;margin-right:-6px}
@@ -274,6 +302,7 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
 .cc .cd2{font-size:11px;color:var(--dim2);line-height:1.4;margin-top:7px}
 .cc .new{position:absolute;top:11px;right:11px;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;padding:3px 7px;border-radius:99px;background:var(--lime);color:#0a0713;font-weight:700}
 .cc .tick{position:absolute;top:11px;right:11px;width:22px;height:22px;border-radius:50%;background:var(--mag);display:grid;place-items:center;font-size:12px}
+.code{font-family:var(--mono);font-size:11px;background:rgba(6,3,14,.7);border:1px solid var(--line);border-radius:12px;padding:12px;white-space:pre;overflow-x:auto;color:#c9e8f5;line-height:1.55}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);z-index:210;background:linear-gradient(200deg,#251b41,#140e22);border-left:1px solid var(--line2);box-shadow:-24px 0 60px rgba(0,0,0,.6);display:flex;flex-direction:column;animation:slideR .34s cubic-bezier(.2,.9,.25,1) both}
 @keyframes slideR{from{transform:translateX(100%)}to{transform:none}}
 .drawer .dh{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
@@ -320,6 +349,7 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
   .sheet{padding:18px;border-radius:20px}
   .castgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
   .toasts{right:10px;left:10px;bottom:10px;max-width:none}
+  .auth-card{padding:24px}
   .drawer{width:100%;top:auto;height:88dvh;border-radius:24px 24px 0 0;border-left:none;border-top:1px solid var(--line2);animation:slideU .34s cubic-bezier(.2,.9,.25,1) both}
   @keyframes slideU{from{transform:translateY(100%)}to{transform:none}}
 }
@@ -331,34 +361,43 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
 <div class="grain"></div>
 <canvas id="fx"></canvas>
 
-<section class="auth hidden" id="authScreen">
+<!-- ЭКРАН ВХОДА — виден сразу при открытии -->
+<section class="auth" id="authScreen">
   <div class="auth-cast" id="authCast"></div>
   <div class="auth-card">
     <div class="brandline">таскер с характером</div>
     <h1>MEME&nbsp;PLANNER<br>9000</h1>
-    <p class="tag">Планер, который не даст слиться. 18 напарников, серии, рутины, достижения. Данные синхронизируются между твоими устройствами.</p>
+    <p class="tag">18 напарников, серии дней, рутины и достижения. Данные синхронизируются между всеми твоими устройствами.</p>
+
+    <div class="diag wait" id="diag"><b>⏳ Подключаем облако…</b>Загружаем Firebase SDK.</div>
     <div class="err" id="authErr"></div>
+
     <input class="fld" type="email" id="authEmail" placeholder="Email" autocomplete="email">
     <input class="fld" type="password" id="authPass" placeholder="Пароль (мин. 6 символов)" autocomplete="current-password">
     <button class="btn w" id="authBtn" style="margin-top:6px">Войти</button>
     <div class="auth-sw"><span id="swText">Нет аккаунта?</span> <b id="swLink">Создать</b></div>
+
     <div class="sep">ИЛИ</div>
-    <button class="btn ghost w" id="demoBtn">🎬 Продолжить без аккаунта (демо)</button>
+    <button class="btn ghost w" id="demoBtn">🎬 Продолжить без аккаунта</button>
+    <button class="btn ghost w hidden" id="backBtn" style="margin-top:8px">← Вернуться к планеру</button>
   </div>
 </section>
 
+<!-- ПРИЛОЖЕНИЕ -->
 <div id="app" class="hidden">
   <header class="topbar">
     <div class="logo"><span class="dot"></span>MEME <em>PLANNER</em> 9000</div>
     <div class="spacer"></div>
-    <button class="chip demo" id="syncChip" title="Хранилище и синхронизация">💾 Демо</button>
+    <button class="chip demo" id="syncChip">💾 Демо</button>
     <button class="icon-btn" id="sndBtn" aria-pressed="true">🔊 <span>Звук</span></button>
     <span class="who" id="who"></span>
+    <button class="icon-btn accent" id="loginBtn">☁️ <span>Войти</span></button>
     <button class="icon-btn danger hidden" id="outBtn">Выйти</button>
   </header>
   <div class="wrap">
-    <div class="banner hidden" id="demoBanner">
-      <span>💾 <b>Демо-режим.</b> Данные только в этом браузере. Войди в аккаунт, чтобы они были на всех устройствах.</span>
+    <div class="banner" id="demoBanner">
+      <span>💾 <b>Демо-режим.</b> Данные хранятся только в этом браузере. Войди в аккаунт — и планер будет одинаковым на телефоне и ноуте.</span>
+      <span class="bx"><button class="btn sm" id="bannerLogin">Войти или зарегистрироваться</button></span>
     </div>
     <div class="grid">
       <section class="card tasks">
@@ -473,6 +512,30 @@ button.chip:hover{border-color:var(--cyan);color:var(--tx)}
   </div>
 </div>
 
+<div class="modal hidden" id="rulesModal" role="dialog" aria-modal="true" aria-label="Настройка Firebase">
+  <div class="sheet narrow">
+    <h2>🛡 Настройка облака</h2>
+    <p class="sub">Три шага в консоли Firebase — и вход заработает для всех пользователей.</p>
+    <div class="sbody">
+      <div class="diag bad" style="margin-bottom:14px">
+        <b>1. Заполни ключи в этом файле</b>
+        В самом верху <code>index.html</code> найди блок <code>window.MP_CONFIG</code> и замени все <code>PASTE_...</code> на значения из Firebase Console → Project settings → Your apps → Web app → Config.
+      </div>
+      <div class="diag bad" style="margin-bottom:14px">
+        <b>2. Включи вход по почте</b>
+        Authentication → Sign-in method → <code>Email/Password</code> → Enable → Save.
+      </div>
+      <div class="diag bad" style="margin-bottom:14px">
+        <b>3. Опубликуй правила Firestore</b>
+        Firestore Database → Create database → вкладка Rules → вставь код ниже → Publish. Именно правила защищают данные, а не секретность ключа.
+      </div>
+      <div class="code" id="rulesBox"></div>
+      <button class="btn ghost w" id="copyRules" style="margin-top:10px">Скопировать правила</button>
+    </div>
+    <button class="btn ghost w" id="rulesClose" style="margin-top:16px">Закрыть</button>
+  </div>
+</div>
+
 <div class="hidden" id="drawerHost"></div>
 <div class="toasts" id="toasts"></div>
 
@@ -493,6 +556,7 @@ var REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var MONTHS=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 var WD=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 var WD_FULL=['воскресенье','понедельник','вторник','среду','четверг','пятницу','субботу'];
+var RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/{uid} {\n      allow read, write: if request.auth != null\n                        && request.auth.uid == uid;\n    }\n  }\n}";
 function hex(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function mix(a,b,t){var A=hex(a),B=hex(b);return '#'+A.map(function(v,i){return clamp(Math.round(v+(B[i]-v)*t),0,255).toString(16).padStart(2,'0');}).join('');}
 var lt=function(h,t){return mix(h,'#ffffff',t);}, dk=function(h,t){return mix(h,'#000000',t);};
@@ -1006,13 +1070,13 @@ var FX={c:null,x:null,p:[],raf:0,
    x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.globalAlpha=clamp(p.l,0,1); x.fillStyle=p.c; x.fillRect(-p.w/2,-p.h/2,p.w,p.h); x.restore(); }
   if(!this.p.length){ cancelAnimationFrame(this.raf); this.raf=0; x.clearRect(0,0,innerWidth,innerHeight); } }};
 
-var data=null, FB=null, authMode='login', lastFocus=null;
+var data=null, FB=null, authMode='login', lastFocus=null, appStarted=false;
 var ui={sel:new Date(),view:new Date(),filter:'all',sort:'manual',q:'',editing:null,drag:null,selMode:false,picked:{},drawer:null,namingView:false};
 var moodOverride=null,moodTimer=0,typeTimer=0,undoState=null,undoTimer=0;
 var mateCache={key:''};
 var VIEWS=[]; try{ VIEWS=JSON.parse(localStorage.getItem('mp9000_views')||'[]'); }catch(e){ VIEWS=[]; }
 
-function cfgValid(c){ return c&&c.apiKey&&c.projectId&&!/^PASTE_/.test(c.apiKey)&&!/^PASTE_/.test(c.projectId); }
+function cfgValid(c){ return !!(c&&c.apiKey&&c.projectId&&!/^PASTE_/.test(c.apiKey)&&!/^PASTE_/.test(c.projectId)); }
 
 function normalize(d){
   d=d||{};
@@ -1067,10 +1131,9 @@ function seedFresh(){
 function seedDemo(){
   var t=new Date(),ts=fmt(t),first=fmt(addDays(t,-13));
   var d=normalize({character:'maga',meta:{firstDay:first,seenAch:[],tried:['maga']}});
-  var r1=uid(),r2=uid(),r3=uid();
-  d.routines=[{id:r1,text:'Зарядка 10 минут',rec:'daily',anchor:first,skip:[],created:Date.now()-13*864e5},
-    {id:r2,text:'Стендап с командой',rec:'weekdays',anchor:first,skip:[],created:Date.now()-13*864e5},
-    {id:r3,text:'Планирование недели',rec:'weekly',anchor:first,skip:[],created:Date.now()-13*864e5}];
+  d.routines=[{id:uid(),text:'Зарядка 10 минут',rec:'daily',anchor:first,skip:[],created:Date.now()-13*864e5},
+    {id:uid(),text:'Стендап с командой',rec:'weekdays',anchor:first,skip:[],created:Date.now()-13*864e5},
+    {id:uid(),text:'Планирование недели',rec:'weekly',anchor:first,skip:[],created:Date.now()-13*864e5}];
   var pool=['Разобрать почту','Прочитать 20 страниц','Смонтировать черновик ролика','Ответить клиенту по правкам','Прогулка 30 минут','Навести порядок на рабочем столе','Собрать референсы','Позвонить родителям'];
   for(var i=13;i>=1;i--){
     var day=addDays(t,-i),ds=fmt(day),broken=(i===6);
@@ -1187,6 +1250,7 @@ function paintTop(){
   var u=FB&&FB.auth&&FB.auth.currentUser;
   $('#who').textContent=u?(u.email||''):'локальный профиль';
   $('#outBtn').classList.toggle('hidden',!u);
+  $('#loginBtn').classList.toggle('hidden',!!u);
   $('#demoBanner').classList.toggle('hidden',Store.mode!=='demo');
 }
 function commit(){ var s=computeStats(); handleUnlocks(s); render(s); Store.save(); }
@@ -1517,19 +1581,38 @@ function drawerSave(){
 function trErr(code){
   return {'auth/invalid-email':'Неверный формат email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль',
    'auth/email-already-in-use':'Этот email уже зарегистрирован','auth/weak-password':'Пароль слишком простой (мин. 6 символов)',
-   'auth/invalid-credential':'Неверный email или пароль','auth/invalid-api-key':'apiKey неверный — проверь файл конфигурации',
+   'auth/invalid-credential':'Неверный email или пароль','auth/invalid-api-key':'apiKey неверный — проверь блок MP_CONFIG в начале файла',
+   'auth/api-key-not-valid':'apiKey не подходит к этому проекту',
    'auth/configuration-not-found':'Включи Email/Password в Firebase Console → Authentication',
+   'auth/operation-not-allowed':'Включи способ входа Email/Password в консоли',
    'auth/too-many-requests':'Слишком много попыток, подожди немного',
-   'auth/network-request-failed':'Нет соединения с Firebase','auth/unauthorized-domain':'Добавь домен в Authentication → Authorized domains'}[code]||('Ошибка: '+(code||'неизвестно'));
+   'auth/network-request-failed':'Нет соединения с Firebase','auth/unauthorized-domain':'Добавь домен в Authentication → Settings → Authorized domains'}[code]||('Ошибка: '+(code||'неизвестно'));
 }
 function authError(t){ var e=$('#authErr'); e.textContent=t; e.style.display='block'; SFX.play('error'); }
+function setDiag(cls,html){ var d=$('#diag'); d.className='diag '+cls; d.innerHTML=html; }
+function lockAuth(lock){
+  $('#authEmail').disabled=lock; $('#authPass').disabled=lock; $('#authBtn').disabled=lock;
+}
 
+function showAuth(){
+  $('#app').classList.add('hidden');
+  $('#authScreen').classList.remove('hidden');
+  $('#backBtn').classList.toggle('hidden',!appStarted);
+  $('#authErr').style.display='none';
+  setTimeout(function(){ if(!$('#authEmail').disabled) $('#authEmail').focus(); },100);
+}
 function enterApp(){
+  appStarted=true;
   $('#authScreen').classList.add('hidden');
   $('#app').classList.remove('hidden');
   mateCache.key=''; moodOverride=null; clearTimeout(moodTimer);
   ui.sel=new Date(); ui.view=new Date(); ui.editing=null;
   paintTop(); render();
+}
+function startDemo(){
+  if(Store.mode!=='demo'){ Store.stop(); }
+  data=Store.loadDemo(); Store.mode='demo'; Store.saveDemo();
+  setSync('demo'); enterApp();
 }
 
 function buildStatic(){
@@ -1544,31 +1627,33 @@ function buildStatic(){
     var id=ORDER[(i*3+1)%ORDER.length];
     return '<div class="fp" style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:'+(i*1.1)+'s">'+portrait(id,'greet')+'</div>';
   }).join('');
+  $('#rulesBox').textContent=RULES;
 }
 
 function bind(){
   $('#swLink').onclick=function(){ authMode=authMode==='login'?'register':'login';
     $('#authBtn').textContent=authMode==='login'?'Войти':'Создать аккаунт';
     $('#swText').textContent=authMode==='login'?'Нет аккаунта?':'Уже есть аккаунт?';
-    $('#swLink').textContent=authMode==='login'?'Создать':'Войти'; $('#authErr').style.display='none'; };
-  $('#authBtn').onclick=async function(){
-    if(!FB) return;
+    $('#swLink').textContent=authMode==='login'?'Создать':'Войти'; $('#authErr').style.display='none'; SFX.play('tick'); };
+  $('#authBtn').onclick=function(){
+    if(!FB){ authError('Облако ещё не подключено. Смотри подсказку выше.'); return; }
     var em=$('#authEmail').value.trim(),pw=$('#authPass').value;
     $('#authErr').style.display='none';
     if(!em||!pw){ authError('Заполни email и пароль'); return; }
     var btn=$('#authBtn'); btn.disabled=true; var old=btn.textContent; btn.textContent='Секунду…';
-    try{
-      if(authMode==='login') await FB.signIn(FB.auth,em,pw);
-      else await FB.signUp(FB.auth,em,pw);
-    }catch(err){ authError(trErr(err&&err.code)); }
-    finally{ btn.disabled=false; btn.textContent=old; }
+    var p=authMode==='login'?FB.signIn(FB.auth,em,pw):FB.signUp(FB.auth,em,pw);
+    p.then(function(){ SFX.play('ach'); toast('Готово, ты в облаке','ok',em); })
+     .catch(function(err){ authError(trErr(err&&err.code)); })
+     .then(function(){ btn.disabled=false; btn.textContent=old; });
   };
   $('#authPass').addEventListener('keydown',function(e){ if(e.key==='Enter') $('#authBtn').click(); });
-  $('#demoBtn').onclick=function(){
-    SFX.play('switch');
-    data=Store.loadDemo(); Store.mode='demo'; Store.saveDemo();
-    enterApp();
-  };
+  $('#authEmail').addEventListener('keydown',function(e){ if(e.key==='Enter') $('#authPass').focus(); });
+  $('#demoBtn').onclick=function(){ SFX.play('switch'); startDemo(); };
+  $('#backBtn').onclick=function(){ SFX.play('tick'); $('#authScreen').classList.add('hidden'); $('#app').classList.remove('hidden'); };
+  $('#loginBtn').onclick=function(){ SFX.play('tick'); showAuth(); };
+  $('#bannerLogin').onclick=function(){ SFX.play('tick'); showAuth(); };
+  $('#syncChip').onclick=function(){ SFX.play('tick'); if(Store.mode==='demo') showAuth(); else toast('Синхронизация активна','ok','Данные в Firestore проекта'); };
+
   $('#dPrev').onclick=function(){ ui.sel=addDays(ui.sel,-1); ui.view=new Date(ui.sel); ui.editing=null; SFX.play('tick'); render(); };
   $('#dNext').onclick=function(){ ui.sel=addDays(ui.sel,1); ui.view=new Date(ui.sel); ui.editing=null; SFX.play('tick'); render(); };
   $('#dToday').onclick=function(){ ui.sel=new Date(); ui.view=new Date(); ui.editing=null; SFX.play('tick'); render(); };
@@ -1652,6 +1737,13 @@ function bind(){
   $('#castClose').onclick=function(){ $('#castModal').classList.add('hidden'); if(lastFocus&&lastFocus.focus) lastFocus.focus(); };
   $('#castModal').addEventListener('click',function(e){ if(e.target.id==='castModal'){ $('#castModal').classList.add('hidden'); if(lastFocus&&lastFocus.focus) lastFocus.focus(); } });
 
+  $('#rulesClose').onclick=function(){ $('#rulesModal').classList.add('hidden'); };
+  $('#rulesModal').addEventListener('click',function(e){ if(e.target.id==='rulesModal') $('#rulesModal').classList.add('hidden'); });
+  $('#copyRules').onclick=function(){
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(RULES).then(function(){toast('Правила скопированы','ok','Firestore → Rules → Publish');},function(){toast('Скопируй вручную','warn');});
+    else toast('Скопируй вручную','warn');
+  };
+
   $('#drawerHost').addEventListener('click',function(e){
     if(e.target.id==='dScrim'){ closeDrawer(); return; }
     var id=e.target.id;
@@ -1680,6 +1772,8 @@ function bind(){
     if(e.key!=='Escape') return;
     if(ui.drawer){ closeDrawer(); return; }
     if(!$('#castModal').classList.contains('hidden')){ $('#castModal').classList.add('hidden'); if(lastFocus&&lastFocus.focus) lastFocus.focus(); return; }
+    if(!$('#rulesModal').classList.contains('hidden')){ $('#rulesModal').classList.add('hidden'); return; }
+    if(!$('#authScreen').classList.contains('hidden')&&appStarted){ $('#authScreen').classList.add('hidden'); $('#app').classList.remove('hidden'); }
   });
 
   $('#sndBtn').onclick=function(){ SFX.set(!SFX.on); paintSound(); if(SFX.on) SFX.play('tick'); };
@@ -1687,11 +1781,8 @@ function bind(){
   $('#outBtn').onclick=function(){
     if(FB) FB.signOut(FB.auth).catch(function(){});
     Store.stop(); data=Store.loadDemo(); Store.mode='demo'; mateCache.key='';
-    setSync('demo'); paintTop(); render();
-    $('#app').classList.add('hidden');
-    $('#authScreen').classList.remove('hidden');
+    setSync('demo'); paintTop(); render(); showAuth();
     $('#authPass').value='';
-    $('#authErr').style.display='none';
   };
 }
 function paintSound(){ var b=$('#sndBtn'); b.classList.toggle('off',!SFX.on); b.setAttribute('aria-pressed',String(SFX.on));
@@ -1699,38 +1790,39 @@ function paintSound(){ var b=$('#sndBtn'); b.classList.toggle('off',!SFX.on); b.
 
 function boot(){
   FX.init(); buildStatic(); bind(); paintSound();
+  data=Store.loadDemo(); setSync('demo'); paintTop();
 
   var cfg=window.MP_CONFIG;
-  if(cfgValid(cfg)){
-    // есть конфиг — загружаем Firebase и показываем форму входа
-    var V='https://www.gstatic.com/firebasejs/10.12.2/';
-    Promise.all([import(V+'firebase-app.js'),import(V+'firebase-auth.js'),import(V+'firebase-firestore.js')])
-      .then(function(mods){
-        var A=mods[0],U=mods[1],F=mods[2];
-        var app=A.initializeApp(cfg);
-        var auth=U.getAuth(app),db=F.getFirestore(app);
-        FB={auth:auth,db:db,doc:F.doc,setDoc:F.setDoc,onSnapshot:F.onSnapshot,signOut:U.signOut,
-            signIn:U.signInWithEmailAndPassword,signUp:U.createUserWithEmailAndPassword};
-        U.onAuthStateChanged(auth,function(user){
-          if(user){ Store.startCloud(user); enterApp(); }
-          else{
-            $('#authScreen').classList.remove('hidden');
-            $('#app').classList.add('hidden');
-          }
-        });
-      })
-      .catch(function(err){
-        // не загрузился SDK — падаем в демо
-        console.error(err);
-        data=Store.loadDemo(); Store.mode='demo'; Store.saveDemo();
-        enterApp();
-        toast('Firebase не загрузился','warn','Работаем в демо-режиме. Проверь интернет или файл конфигурации.');
-      });
-  } else {
-    // конфига нет — сразу в демо
-    data=Store.loadDemo(); Store.mode='demo'; Store.saveDemo();
-    enterApp();
+  if(!cfgValid(cfg)){
+    lockAuth(true);
+    setDiag('bad','<b>⚙️ Облако не настроено — вход выключен</b>Заполни блок <code>window.MP_CONFIG</code> в самом верху этого файла (замени все <code>PASTE_...</code>), включи Email/Password и опубликуй правила Firestore. Пока можно работать без аккаунта.<div style="margin-top:10px"><button class="btn ghost sm" id="openRules">Показать инструкцию и правила</button></div>');
+    var or=$('#openRules'); if(or) or.onclick=function(){ $('#rulesModal').classList.remove('hidden'); SFX.play('tick'); };
+    return;
   }
+
+  lockAuth(true);
+  setDiag('wait','<b>⏳ Подключаем Firebase…</b>Загружаем SDK и проверяем сессию.');
+  var V='https://www.gstatic.com/firebasejs/10.12.2/';
+  Promise.all([import(V+'firebase-app.js'),import(V+'firebase-auth.js'),import(V+'firebase-firestore.js')])
+    .then(function(mods){
+      var A=mods[0],U=mods[1],F=mods[2];
+      var app=A.initializeApp(cfg),auth=U.getAuth(app),db=F.getFirestore(app);
+      FB={auth:auth,db:db,doc:F.doc,setDoc:F.setDoc,onSnapshot:F.onSnapshot,signOut:U.signOut,
+          signIn:U.signInWithEmailAndPassword,signUp:U.createUserWithEmailAndPassword};
+      setDiag('good','<b>✅ Облако подключено</b>Проект <code>'+esc(cfg.projectId)+'</code>. Входи или создавай аккаунт — данные будут на всех устройствах.');
+      lockAuth(false);
+      U.onAuthStateChanged(auth,function(user){
+        if(user){ Store.startCloud(user); enterApp(); }
+        else{
+          if(Store.mode==='cloud'){ Store.stop(); data=Store.loadDemo(); setSync('demo'); }
+          paintTop(); showAuth();
+        }
+      });
+    })
+    .catch(function(err){
+      lockAuth(true);
+      setDiag('bad','<b>⚠️ Firebase не загрузился</b>'+esc(err&&err.message?err.message:'Проверь интернет или блокировщик')+'. Можно работать без аккаунта — данные останутся в этом браузере.');
+    });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
